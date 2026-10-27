@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenny | TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    {% include 'navbar.html' %}
+    <main class="index-body">
+        <section class="section-container">
+            <img src="{{ url_for('static', filename='IMG/tenny-avatar.png') }}" alt="Imagen de Tenny" width="112" height="112" style="object-fit:cover;border-radius:50%;border:2px solid #228B22">
+            <h1>Tenny</h1>
+            <p>Abre la tarjeta de Tenny para consultar dudas sobre jugadores, profesores y reservas.</p>
+        </section>
+    </main>
+    {% include 'footer.html' %}
+</body>
+</html>

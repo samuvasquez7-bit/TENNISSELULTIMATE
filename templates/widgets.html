@@ -1,0 +1,77 @@
+<div id="tennissel-widgets" class="tennissel-widgets" data-user-id="{{ session.get('user_id', '') }}" data-role="{{ session.get('role', 'cliente') }}">
+    <div class="widget-dock-heading"><span>Accesos rápidos</span><button id="widget-dock-toggle" class="widget-dock-toggle" type="button" aria-label="Ocultar accesos flotantes" aria-expanded="true"><i class="fa-solid fa-chevron-down"></i></button></div>
+    <div class="widget-launchers">
+        <button id="chatbot-launcher" class="widget-launcher widget-launcher-chat" type="button" aria-label="Abrir Tenny, asistente virtual">
+            <span class="widget-launcher-icon"><img class="widget-assistant-avatar" src="{{ url_for('static', filename='IMG/tenny-avatar.png') }}" alt=""></span><div class="widget-launcher-copy"><strong>Tenny</strong><small>Asistente virtual</small></div><i class="fa-solid fa-chevron-right widget-launcher-arrow" aria-hidden="true"></i>
+        </button>
+        <button id="widget-launcher" class="widget-launcher widget-launcher-radar" type="button" aria-label="Abrir Radar de jugadores">
+            <span class="widget-launcher-icon"><i class="fa-solid fa-users"></i></span><div class="widget-launcher-copy"><strong>Radar</strong><small>Encuentra jugadores</small></div><i class="fa-solid fa-chevron-right widget-launcher-arrow" aria-hidden="true"></i>
+        </button>
+        <button id="widget-teacher-launcher" class="widget-launcher widget-launcher-teacher" type="button" aria-label="Abrir directorio de profesores">
+            <span class="widget-launcher-icon"><i class="fa-solid fa-graduation-cap"></i></span><div class="widget-launcher-copy"><strong id="teacher-launcher-label">Profesores</strong><small id="teacher-launcher-description">Clases y entrenadores</small></div><i class="fa-solid fa-chevron-right widget-launcher-arrow" aria-hidden="true"></i>
+        </button>
+        <a href="{{ url_for('mapas') }}" class="widget-launcher widget-launcher-maps" aria-label="Ir a Mapas y encontrar canchas">
+            <span class="widget-launcher-icon"><i class="fa-solid fa-map-location-dot"></i></span><div class="widget-launcher-copy"><strong>Mapas</strong><small>Encuentra canchas</small></div><i class="fa-solid fa-arrow-up-right-from-square widget-launcher-arrow" aria-hidden="true"></i>
+        </a>
+        {% if session.get('role') == 'admin' %}
+        <a href="{{ url_for('admin_tiendas') }}" class="widget-launcher widget-launcher-maps" aria-label="Abrir gestión de tiendas">
+            <span class="widget-launcher-icon"><i class="fa-solid fa-handshake"></i></span><div class="widget-launcher-copy"><strong>Tiendas</strong><small>Acuerdos y altas</small></div><i class="fa-solid fa-arrow-up-right-from-square widget-launcher-arrow" aria-hidden="true"></i>
+        </a>
+        {% endif %}
+    </div>
+
+    <section id="chatbot-window" class="widget-panel widget-panel-chatbot widget-hidden" aria-label="Tenny">
+        <header class="widget-header widget-chat-header">
+            <img class="widget-chat-profile" src="{{ url_for('static', filename='IMG/tenny-avatar.png') }}" alt="Tenny">
+            <div class="widget-chat-contact"><strong>Tenny</strong><small><span class="widget-chat-online"></span> En línea · Asistente virtual</small></div>
+            <button class="btn-close-widget" data-close-widget="chatbot-window" type="button" aria-label="Cerrar chat">&times;</button>
+        </header>
+        <div class="chatbot-shortcuts" aria-label="Preguntas rápidas"><button type="button" data-chatbot-prompt="¿Cómo hago una reserva?">Reservas</button><button type="button" data-chatbot-prompt="¿Dónde están los jugadores?">Jugadores</button><button type="button" data-chatbot-prompt="¿Qué incluye Premium?">Premium</button></div>
+        <div id="chatbot-messages-body" class="chat-messages-container" aria-live="polite" aria-label="Conversación con Tenny">
+            <div class="chatbot-message-row chatbot-message-incoming"><img class="chatbot-message-avatar" src="{{ url_for('static', filename='IMG/tenny-avatar.png') }}" alt=""><div class="msg-bubble msg-other">¡Hola! Soy Tenny, tu asistente de TENNISSEL. Pregúntame sobre reservas, jugadores, profesores, entrenamientos, productos o tu cuenta.<time class="chatbot-message-time"></time></div></div>
+        </div>
+        <form id="chatbot-form" class="chat-input-area">
+            <input type="text" id="chatbot-input-text" placeholder="Escribe un mensaje..." autocomplete="off" maxlength="500" aria-label="Escribe un mensaje para Tenny">
+            <button type="submit" aria-label="Enviar mensaje"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+    </section>
+
+    <section id="widget-window" class="widget-panel widget-hidden" aria-label="Radar de jugadores">
+        <header class="widget-header widget-radar-header">
+            <span><i class="fa-solid fa-users"></i> Jugadores cercanos</span>
+            <button class="btn-close-widget" data-close-widget="widget-window" type="button" aria-label="Cerrar">&times;</button>
+        </header>
+        <div id="radar-list" class="widget-content"><p class="widget-empty">Cargando jugadores...</p></div>
+    </section>
+
+    <section id="widget-teacher-window" class="widget-panel widget-hidden" aria-label="Directorio de profesores">
+        <header class="widget-header widget-teacher-header">
+            <span><i class="fa-solid fa-graduation-cap"></i> Profesores</span>
+            <button class="btn-close-widget" data-close-widget="widget-teacher-window" type="button" aria-label="Cerrar">&times;</button>
+        </header>
+        <div id="teacher-list" class="widget-content"><p class="widget-empty">Cargando profesores...</p></div>
+    </section>
+
+    <section id="chat-universal-box" class="widget-panel widget-chat-user widget-hidden" aria-label="Conversacion">
+        <header class="widget-header">
+            <button id="chat-back-button" class="btn-close-widget" type="button" aria-label="Volver">&larr;</button>
+            <img id="chat-target-avatar" class="widget-chat-profile" src="{{ url_for('static', filename='IMG/avatar-tennisel-1.png', v='20261005-7') }}" alt="Foto del contacto" hidden>
+            <span id="chat-target-name">Conversacion</span>
+            <label class="chat-theme-control"><span>Fondo</span><select data-chat-theme-select aria-label="Fondo del chat"><option value="default">Clásico</option><option value="mountains">Montañas</option><option value="sunset">Atardecer</option><option value="court">Cancha</option></select></label>
+            <button class="btn-close-widget" data-close-widget="chat-universal-box" type="button" aria-label="Cerrar">&times;</button>
+        </header>
+        <div id="chat-messages-body" class="chat-messages-container chat-theme-surface"></div>
+        <form id="proposal-form" class="proposal-form" hidden>
+            <select id="proposal-location" required><option value="">Cancha</option></select>
+            <input id="proposal-date" type="date" required>
+            <input id="proposal-time" type="time" step="3600" required>
+            <select id="proposal-duration" required><option value="1">1 hora</option><option value="2">2 horas</option></select>
+            <button type="submit">Enviar propuesta</button>
+        </form>
+        <form id="chat-form" class="chat-input-area">
+            <button id="proposal-toggle" type="button" aria-label="Proponer reserva" aria-controls="proposal-form" aria-expanded="false" title="Desplegar propuesta"><i class="fa-solid fa-calendar-plus"></i></button>
+            <input type="text" id="chat-input-text" placeholder="Escribe un mensaje..." autocomplete="off">
+            <button type="submit" aria-label="Enviar"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+    </section>
+</div>

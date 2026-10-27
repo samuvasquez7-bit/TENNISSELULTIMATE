@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Direcciones guardadas | TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #121212; color: #fff; }
+        .addresses-page { max-width: 1120px; margin: 0 auto; padding: 108px 22px 64px; }
+        .addresses-header { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 22px 24px; margin-bottom: 22px; border: 1px solid #303030; border-left: 4px solid var(--verde-neon); background: #1a1a1a; }
+        .addresses-header span { color: var(--verde-neon); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .addresses-header h1 { margin: 7px 0; font-size: 30px; }
+        .addresses-header p { margin: 0; color: #a7b0aa; font-size: 13px; }
+        .addresses-layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr); gap: 28px; align-items: start; }
+        .addresses-list { display: grid; gap: 12px; }
+        .address-card { padding: 18px; border: 1px solid #303030; background: #1a1a1a; }
+        .address-card-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 9px; }
+        .address-card h2 { margin: 0; font-size: 16px; }
+        .address-primary { color: var(--verde-neon); font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .address-lines { color: #aeb9b1; font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+        .address-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+        .address-actions button { min-height: 34px; padding: 0 10px; color: #dce5df; background: transparent; border: 1px solid #465149; border-radius: 4px; cursor: pointer; font-size: 11px; }
+        .address-actions button:hover { border-color: var(--verde-neon); }
+        .address-actions .address-delete { color: #f0aaa1; border-color: #573a37; }
+        .address-form { padding: 20px; border: 1px solid #303030; background: #1a1a1a; }
+        .address-form h2 { margin: 0 0 5px; font-size: 18px; }
+        .address-form > p { margin: 0 0 16px; color: #87938b; font-size: 12px; line-height: 1.5; }
+        .address-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .address-fields label { display: grid; gap: 5px; color: #aeb9b1; font-size: 11px; }
+        .address-fields input, .address-fields select, .address-fields textarea { width: 100%; min-height: 39px; padding: 8px 10px; color: #f4f6f4; background: #111; border: 1px solid #383838; border-radius: 4px; font: inherit; font-size: 12px; }
+        .address-fields textarea { min-height: 64px; resize: vertical; }
+        .address-wide { grid-column: 1 / -1; }
+        .address-default-toggle { display: flex !important; grid-template-columns: auto 1fr; align-items: center; gap: 8px !important; }
+        .address-default-toggle input { width: 15px; min-height: 15px; accent-color: var(--verde-neon); }
+        .address-submit { width: 100%; min-height: 42px; margin-top: 14px; color: #000; background: var(--verde-neon); border: 0; border-radius: 4px; font-weight: 700; cursor: pointer; }
+        .addresses-empty { padding: 32px 10px; border-block: 1px solid #303030; color: #aaa; font-size: 13px; }
+        @media (max-width: 760px) { .addresses-page { padding: 90px 16px 44px; }.addresses-layout { grid-template-columns: 1fr; }.addresses-header { align-items: flex-start; padding: 18px; }.addresses-header h1 { font-size: 25px; } }
+        @media (max-width: 480px) { .address-fields { grid-template-columns: 1fr; }.address-wide { grid-column: auto; } }
+    </style>
+</head>
+<body>
+{% include 'navbar.html' %}
+<main class="addresses-page">
+    <header class="addresses-header">
+        <div><span>Mi cuenta / Entregas</span><h1>Direcciones guardadas</h1><p>Elige dónde recibir tus compras. La dirección principal se selecciona primero en el checkout.</p></div>
+        <i class="fa-solid fa-location-dot" aria-hidden="true" style="color:var(--verde-neon);font-size:28px"></i>
+    </header>
+    <div class="addresses-layout">
+        <section class="addresses-list" aria-label="Mis direcciones">
+            {% for direccion in direcciones %}
+            <article class="address-card">
+                <div class="address-card-head"><h2>{{ direccion.etiqueta }}</h2>{% if direccion.es_principal %}<span class="address-primary">Principal</span>{% endif %}</div>
+                <div class="address-lines"><strong>{{ direccion.nombre_recibe }}</strong> · {{ direccion.telefono }}<br>{{ direccion.direccion }}{% if direccion.complemento %}, {{ direccion.complemento }}{% endif %}<br>{{ direccion.barrio }}, {{ direccion.ciudad }}, {{ direccion.departamento }}{% if direccion.codigo_postal %} · CP {{ direccion.codigo_postal }}{% endif %}{% if direccion.instrucciones %}<br><span>Indicaciones: {{ direccion.instrucciones }}</span>{% endif %}</div>
+                <div class="address-actions">
+                    {% if not direccion.es_principal %}<form method="post" action="{{ url_for('direccion_principal', direccion_id=direccion.id) }}"><button type="submit"><i class="fa-solid fa-star"></i> Hacer principal</button></form>{% endif %}
+                    <form method="post" action="{{ url_for('eliminar_direccion', direccion_id=direccion.id) }}" onsubmit="return confirm('¿Eliminar esta dirección guardada?');"><button class="address-delete" type="submit"><i class="fa-regular fa-trash-can"></i> Eliminar</button></form>
+                </div>
+            </article>
+            {% else %}
+            <div class="addresses-empty">Aún no tienes direcciones guardadas. Agrega una aquí o guárdala desde el checkout.</div>
+            {% endfor %}
+        </section>
+        <form class="address-form" method="post" action="{{ url_for('mis_direcciones') }}">
+            <h2>Agregar dirección</h2>
+            <p>Los campos marcados son necesarios para que la tienda pueda coordinar la entrega.</p>
+            <div class="address-fields">
+                <label>Etiqueta<input name="etiqueta" maxlength="60" value="Casa" placeholder="Casa, trabajo..."></label>
+                <label>Nombre de quien recibe<input name="nombre_recibe" maxlength="150" required autocomplete="name"></label>
+                <label>Celular<input name="telefono" type="tel" maxlength="40" required autocomplete="tel"></label>
+                <label>Departamento
+                    <select name="departamento" required>
+                        <option value="">Selecciona</option>
+                        <option>Amazonas</option><option>Antioquia</option><option>Arauca</option><option>Atlántico</option><option>Bogotá D.C.</option><option>Bolívar</option><option>Boyacá</option><option>Caldas</option><option>Caquetá</option><option>Casanare</option><option>Cauca</option><option>Cesar</option><option>Chocó</option><option>Córdoba</option><option>Cundinamarca</option><option>Guainía</option><option>Guaviare</option><option>Huila</option><option>La Guajira</option><option>Magdalena</option><option>Meta</option><option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option><option>Quindío</option><option>Risaralda</option><option>San Andrés y Providencia</option><option>Santander</option><option>Sucre</option><option>Tolima</option><option>Valle del Cauca</option><option>Vaupés</option><option>Vichada</option>
+                    </select>
+                </label>
+                <label>Ciudad o municipio<input name="ciudad" maxlength="120" required autocomplete="address-level2"></label>
+                <label>Barrio<input name="barrio" maxlength="120" required autocomplete="address-level3"></label>
+                <label class="address-wide">Dirección<input name="direccion" maxlength="300" required autocomplete="street-address" placeholder="Calle/carrera y número"></label>
+                <label>Apartamento, interior o conjunto<input name="complemento" maxlength="150" autocomplete="address-line2"></label>
+                <label>Código postal<input name="codigo_postal" maxlength="20" autocomplete="postal-code"></label>
+                <label class="address-wide">Indicaciones<textarea name="instrucciones" maxlength="500" placeholder="Portería o referencias (opcional)"></textarea></label>
+                <label class="address-wide address-default-toggle"><input type="checkbox" name="es_principal"><span>Usar como dirección principal</span></label>
+            </div>
+            <button class="address-submit" type="submit"><i class="fa-solid fa-plus"></i> Guardar dirección</button>
+        </form>
+    </div>
+</main>
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+</body>
+</html>

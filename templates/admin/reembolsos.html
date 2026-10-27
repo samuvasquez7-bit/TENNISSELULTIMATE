@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Solicitudes de reembolso | TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #121212; color: #fff; }
+        .refund-admin-notices { margin-bottom:18px; }
+        .refund-admin-notices .alert { border-radius:9px; }
+        .refund-admin-list { display: grid; gap: 12px; }
+        .refund-request-card { display: grid; grid-template-columns: minmax(0,1fr) minmax(260px,340px); gap: 20px; padding: 18px; border: 1px solid #303030; border-left: 3px solid #ffd700; background: #1a1a1a; }
+        .refund-request-card h2 { margin: 0 0 6px; font-size: 17px; }
+        .refund-request-meta { color: #a8b2ab; font-size: 12px; line-height: 1.6; }
+        .refund-demo-note { margin:10px 0; padding:10px 12px; border:1px solid rgba(255,193,7,.28); border-radius:8px; color:#ded2aa; background:rgba(255,193,7,.06); font-size:12px; line-height:1.5; }
+        .refund-request-reason { margin: 12px 0 0; color: #ddd; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+        .refund-evidence { display: block; width: min(280px, 100%); max-height: 220px; margin-top: 12px; border: 1px solid #414b44; object-fit: contain; background: #080b09; }
+        .refund-request-state { display: inline-block; margin-top: 8px; padding: 4px 8px; border: 1px solid #777; color: #ddd; font-size: 10px; text-transform: uppercase; }
+        .refund-request-state.pending { border-color: #ffd700; color: #ffd700; }
+        .refund-review { display: grid; align-content: start; gap: 9px; }
+        .refund-review label { display: grid; gap: 5px; color: #aaa; font-size: 11px; }
+        .refund-review select, .refund-review textarea { width: 100%; min-height: 38px; padding: 8px 10px; color: #fff; background: #111; border: 1px solid #383838; border-radius: 4px; }
+        .refund-review textarea { min-height: 68px; resize: vertical; }
+        .refund-review button { min-height: 39px; padding: 0 12px; color: #000; background: #228B22; border: 0; border-radius: 4px; font-weight: 700; cursor: pointer; }
+        .refund-admin-empty { padding: 40px 12px; border-block: 1px solid #303030; color: #aaa; text-align: center; }
+        @media (max-width: 720px) { .refund-request-card { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+{% include 'navbar.html' %}
+<main class="admin-crud-page">
+<div class="admin-crud-shell">
+    <header class="admin-crud-hero">
+        <div><span class="admin-crud-eyebrow">Administración / Facturas</span><h1>Solicitudes de reembolso</h1><p>Revisa el estado de las solicitudes y registra cada resolución.</p></div>
+        <div class="admin-crud-count"><strong>{{ solicitudes|length }}</strong><span>solicitudes</span></div>
+    </header>
+    <form method="get" action="{{ url_for('admin_reembolsos') }}" class="admin-crud-search mb-4">
+        <label class="visually-hidden" for="refund-search">Buscar reembolsos</label>
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input id="refund-search" type="search" name="q" value="{{ search }}" maxlength="120" placeholder="Buscar por factura, cliente, motivo o estado">
+        <button type="submit">Buscar</button>
+        {% if search %}<a class="admin-crud-clear" href="{{ url_for('admin_reembolsos') }}">Limpiar</a>{% endif %}
+    </form>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="refund-admin-notices" aria-live="polite">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'success' if category == 'success' else 'warning' if category == 'warning' else 'danger' if category == 'error' else 'info' }} mb-2" role="status">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+    <section class="refund-admin-list">
+        {% for solicitud in solicitudes %}
+        <article class="refund-request-card">
+            <div>
+                <h2>{{ solicitud.factura_formateada }} · ${{ solicitud.factura_total|cop }}</h2>
+                <div class="refund-request-meta">Cliente: {{ solicitud.cliente }}<br>Compra: {{ solicitud.fecha_compra.strftime('%d/%m/%Y') if solicitud.fecha_compra else 'Sin fecha' }}<br>Entrega real: {{ solicitud.fecha_entrega_real.strftime('%d/%m/%Y %H:%M') if solicitud.fecha_entrega_real else 'Sin entrega registrada' }}<br>Solicitud: {{ solicitud.created_at.strftime('%d/%m/%Y %H:%M') if solicitud.created_at else '' }}</div>
+                {% if solicitud.estado_factura == 'demo' %}<p class="refund-demo-note">Compra de demostración: no hubo cobro. Al completar, se generará un registro de devolución simulado, sin movimiento de dinero.</p>{% endif %}
+                <span class="refund-request-state {{ 'pending' if solicitud.estado == 'pendiente' else '' }}">{{ solicitud.estado }}</span>
+                {% if solicitud.referencia_simulada %}<p class="refund-demo-note">Devolución simulada: ${{ solicitud.monto_simulado|cop }} · Referencia {{ solicitud.referencia_simulada }}. No hubo movimiento de dinero.</p>{% endif %}
+                <p class="refund-request-reason">{{ solicitud.motivo }}</p>
+                {% if solicitud.evidencia %}<a href="{{ url_for('static', filename=solicitud.evidencia) }}" target="_blank" rel="noopener"><img class="refund-evidence" src="{{ url_for('static', filename=solicitud.evidencia) }}" alt="Evidencia de {{ solicitud.factura_formateada }}" loading="lazy"></a>{% else %}<p class="refund-request-meta">No se adjuntó evidencia.</p>{% endif %}
+                {% if solicitud.respuesta_admin %}<p class="refund-request-meta">Nota: {{ solicitud.respuesta_admin }}</p>{% endif %}
+            </div>
+            {% if solicitud.estado in ['pendiente', 'aprobado'] %}
+            <form class="refund-review" method="post" action="{{ url_for('admin_reembolsos') }}">
+                <input type="hidden" name="solicitud_id" value="{{ solicitud.id }}">
+                <input type="hidden" name="q" value="{{ search }}">
+                <label>Actualizar estado
+                    <select name="estado" required>
+                        {% if solicitud.estado == 'pendiente' %}<option value="aprobado">Aprobar solicitud</option><option value="rechazado">Rechazar solicitud</option>{% else %}<option value="completado">{{ 'Cerrar gestión de devolución' if solicitud.estado_factura == 'demo' else 'Marcar devolución ejecutada' }}</option>{% endif %}
+                    </select>
+                </label>
+                <label>Respuesta / referencia de pago<textarea name="respuesta_admin" maxlength="1000" placeholder="{% if solicitud.estado_factura == 'demo' %}Nota de resolución{% else %}Motivo o referencia de transacción{% endif %}{% if solicitud.estado == 'aprobado' %} (obligatoria al completar){% endif %}"></textarea></label>
+                <button type="submit"><i class="fa-solid fa-check"></i> Guardar revisión</button>
+            </form>
+            {% endif %}
+        </article>
+        {% else %}
+        <div class="refund-admin-empty">No hay solicitudes de reembolso todavía.</div>
+        {% endfor %}
+    </section>
+</div>
+</main>
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+</body>
+</html>

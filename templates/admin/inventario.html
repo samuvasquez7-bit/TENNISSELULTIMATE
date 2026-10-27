@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Inventario | TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </head>
+<body>
+{% include 'navbar.html' %}
+<main class="admin-crud-page">
+    <div class="admin-crud-shell">
+        <header class="admin-crud-hero">
+            <div>
+                <span class="admin-crud-eyebrow"><i class="fa-solid fa-boxes-stacked"></i> Tienda y pedidos</span>
+                <h1>Inventario</h1>
+                <p>Controla productos, categorías, precios y disponibilidad en un solo panel.</p>
+            </div>
+            <div class="admin-crud-count"><strong>{{ productos|length }}</strong><span>productos</span></div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="admin-crud-notices" aria-live="polite">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'warning' if category == 'warning' else 'danger' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="admin-crud-panel">
+            <div class="admin-crud-panel-heading admin-crud-list-heading">
+                <div><span>Catálogo interno</span><h2>Filtrar inventario</h2></div>
+                <a class="admin-crud-primary" href="{{ url_for('editar_inventario', id=0) }}"><i class="fa-solid fa-plus"></i> Nuevo producto</a>
+            </div>
+            <form method="get" class="admin-crud-form">
+                <div class="admin-crud-field admin-crud-field-wide">
+                    <label for="inventory-search">Buscar producto</label>
+                    <input id="inventory-search" type="search" name="busqueda" value="{{ busqueda }}" placeholder="Nombre, SKU o ID">
+                </div>
+                <div class="admin-crud-field">
+                    <label for="inventory-order">Ordenar por</label>
+                    <select id="inventory-order" name="orden">
+                        <option value="id_asc" {% if orden == 'id_asc' %}selected{% endif %}>Más antiguos</option>
+                        <option value="id_desc" {% if orden == 'id_desc' %}selected{% endif %}>Más recientes</option>
+                        <option value="precio_asc" {% if orden == 'precio_asc' %}selected{% endif %}>Precio menor</option>
+                        <option value="precio_desc" {% if orden == 'precio_desc' %}selected{% endif %}>Precio mayor</option>
+                        <option value="stock_asc" {% if orden == 'stock_asc' %}selected{% endif %}>Menor stock</option>
+                        <option value="stock_desc" {% if orden == 'stock_desc' %}selected{% endif %}>Mayor stock</option>
+                        <option value="nombre_asc" {% if orden == 'nombre_asc' %}selected{% endif %}>Nombre A-Z</option>
+                        <option value="nombre_desc" {% if orden == 'nombre_desc' %}selected{% endif %}>Nombre Z-A</option>
+                    </select>
+                </div>
+                <div class="admin-crud-form-actions">
+                    <button class="admin-crud-primary" type="submit"><i class="fa-solid fa-filter"></i> Aplicar filtros</button>
+                    {% if busqueda or orden != 'id_asc' %}<a class="admin-crud-secondary" href="{{ url_for('admin_inventario') }}">Limpiar</a>{% endif %}
+                </div>
+            </form>
+        </section>
+
+        <section class="admin-crud-panel">
+            <div class="admin-crud-panel-heading"><div><span>Registros</span><h2>Productos del inventario</h2></div></div>
+            <div class="admin-crud-table-wrap">
+                <table class="admin-crud-table">
+                    <thead><tr><th>ID</th><th>Producto</th><th>SKU</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead>
+                    <tbody>
+                    {% for producto in productos %}
+                        <tr>
+                            <td>{{ producto.id }}</td>
+                            <td><strong>{{ producto.nombre }}</strong></td>
+                            <td>{{ producto.sku or '—' }}</td>
+                            <td>{{ producto.categoria_nombre or '—' }}</td>
+                            <td>${{ producto.precio|cop }}</td>
+                            <td>{{ producto.stock }}</td>
+                            <td><span class="admin-crud-pill {{ 'is-active' if producto.activo else 'is-inactive' }}">{{ 'Activo' if producto.activo else 'Inactivo' }}</span></td>
+                            <td>
+                                <div class="admin-crud-row-actions">
+                                    <a class="admin-crud-icon-button" href="{{ url_for('editar_inventario', id=producto.id) }}" aria-label="Editar {{ producto.nombre }}" title="Editar"><i class="fa-solid fa-pen"></i></a>
+                                    <form method="post" action="{{ url_for('editar_inventario', id=producto.id) }}" onsubmit="return confirm('¿Eliminar este producto del inventario?');">
+                                        <input type="hidden" name="accion" value="eliminar">
+                                        <button class="admin-crud-icon-button is-delete" type="submit" aria-label="Eliminar {{ producto.nombre }}" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td class="admin-crud-empty" colspan="8"><i class="fa-regular fa-folder-open"></i><strong>No hay productos</strong><span>Ajusta los filtros o crea un producto nuevo.</span></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</main>
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+</body>
+</html>

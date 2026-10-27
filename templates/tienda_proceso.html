@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Incorporación de tienda | TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="store-page">
+{% include 'navbar.html' %}
+<main class="store-shell">
+    <header class="store-heading">
+        <span>INCORPORACIÓN DE TIENDA</span>
+        <h1>Construyamos el proceso juntos</h1>
+        <p>En esta conversación definimos cómo se venderán tus productos, qué gestiona TENNISSEL, la logística y las condiciones comerciales. La carga de productos se habilita cuando ambas partes estén de acuerdo.</p>
+    </header>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}<div class="store-alert store-alert-{{ category }}">{{ message }}</div>{% endfor %}{% endif %}
+    {% endwith %}
+
+    <section class="store-form-panel" style="margin-bottom:24px">
+        <div class="store-panel-title"><i class="fa-solid fa-list-check"></i><div><span>ESTADO DEL PROCESO</span><h2>{{ 'Acuerdo aceptado' if proceso.tienda_acepto else 'Conversación con TENNISSEL' }}</h2></div></div>
+        <ol>
+            <li>Conversar sobre catálogo, ventas, pagos, envíos y responsabilidades.</li>
+            <li>Compartir la ubicación de tu tienda o punto de despacho.</li>
+            <li>Revisar y aceptar las condiciones propuestas por administración.</li>
+            <li>Enviar productos individualmente o cargar hasta 50 desde un CSV.</li>
+        </ol>
+        {% if proceso.acuerdo %}
+        <article class="store-form-section">
+            <h3>Condiciones propuestas por TENNISSEL</h3>
+            <p style="white-space:pre-wrap">{{ proceso.acuerdo }}</p>
+            {% if not proceso.tienda_acepto %}
+            <form method="post">
+                <input type="hidden" name="accion" value="aceptar_acuerdo">
+                <label style="display:flex;align-items:center;gap:10px">
+                    <input type="checkbox" name="confirmar" required>
+                    <span>Confirmo que revisé y acepto estas condiciones.</span>
+                </label>
+                <button class="store-submit" type="submit"><i class="fa-solid fa-handshake"></i> Aceptar acuerdo</button>
+            </form>
+            {% else %}
+            <p class="store-review-status store-review-aprobado"><i class="fa-solid fa-circle-check"></i> Aceptado. Ya puedes enviar productos.</p>
+            {% endif %}
+        </article>
+        {% else %}
+        <p class="store-empty">TENNISSEL aún no ha enviado una propuesta de condiciones. Usa la conversación para iniciar el proceso.</p>
+        {% endif %}
+    </section>
+
+    <div class="store-layout">
+        <section class="store-form-panel">
+            <div class="store-panel-title"><i class="fa-solid fa-location-dot"></i><div><span>LOGÍSTICA</span><h2>Comparte la ubicación</h2></div></div>
+            <p>Indica dónde está tu tienda o desde dónde despacharás los pedidos. Puedes escribir la dirección o compartir tu ubicación actual desde el navegador.</p>
+            {% if proceso.ubicacion_ciudad and proceso.ubicacion_direccion %}
+            <p class="store-review-status store-review-aprobado"><i class="fa-solid fa-location-dot"></i> {{ proceso.ubicacion_ciudad }} · {{ proceso.ubicacion_direccion }}</p>
+            {% endif %}
+            <form method="post" class="store-form" id="store-location-form">
+                <input type="hidden" name="accion" value="ubicacion">
+                <label>Ciudad o municipio<input name="ciudad" maxlength="120" required value="{{ proceso.ubicacion_ciudad or '' }}" placeholder="Ej. Bogotá"></label>
+                <label>Dirección o punto de entrega<input name="direccion" maxlength="255" required value="{{ proceso.ubicacion_direccion or '' }}" placeholder="Dirección, bodega o punto de despacho"></label>
+                <input type="hidden" name="lat" id="store-location-lat" value="{{ proceso.lat or '' }}">
+                <input type="hidden" name="lng" id="store-location-lng" value="{{ proceso.lng or '' }}">
+                <button type="button" id="store-share-location" class="store-secondary-button"><i class="fa-solid fa-crosshairs"></i> Usar mi ubicación actual</button>
+                <small id="store-location-message" role="status"></small>
+                <button class="store-submit" type="submit"><i class="fa-solid fa-location-arrow"></i> Compartir ubicación</button>
+            </form>
+        </section>
+
+        <section class="store-products-panel">
+            <div class="store-panel-title"><i class="fa-solid fa-comments"></i><div><span>CONVERSACIÓN INICIAL</span><h2>Tienda y TENNISSEL</h2></div></div>
+            <div class="store-products-grid" style="max-height:480px;overflow:auto">
+                {% for mensaje in mensajes %}
+                <article class="store-product-card" style="display:block">
+                    <small>{{ mensaje.emisor_nombre or 'TENNISSEL' }} · {{ mensaje.created_at }}</small>
+                    <p style="white-space:pre-wrap;margin:8px 0">{{ mensaje.texto }}</p>
+                    {% if mensaje.tipo == 'ubicacion' %}
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ mensaje.texto|urlencode }}" target="_blank" rel="noopener noreferrer">Ver ubicación en el mapa</a>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+            <form method="post" class="store-form" style="margin-top:18px">
+                <input type="hidden" name="accion" value="mensaje">
+                <label>Escribe a administración<textarea name="texto" maxlength="2000" rows="4" required placeholder="Cuéntanos qué productos vendes, cómo preparas los pedidos o qué dudas tienes."></textarea></label>
+                <button class="store-submit" type="submit"><i class="fa-solid fa-paper-plane"></i> Enviar mensaje</button>
+            </form>
+        </section>
+    </div>
+</main>
+{% include 'footer.html' %}
+<script>
+(() => {
+    const button = document.getElementById('store-share-location');
+    const message = document.getElementById('store-location-message');
+    if (!button || !message) return;
+    button.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+            message.textContent = 'Este navegador no permite compartir coordenadas; puedes indicar la dirección manualmente.';
+            return;
+        }
+        button.disabled = true;
+        message.textContent = 'Obteniendo ubicación…';
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                document.getElementById('store-location-lat').value = position.coords.latitude.toFixed(7);
+                document.getElementById('store-location-lng').value = position.coords.longitude.toFixed(7);
+                message.textContent = 'Ubicación obtenida. Envía el formulario para compartirla.';
+                button.disabled = false;
+            },
+            () => {
+                message.textContent = 'No se pudo obtener la ubicación. Revisa los permisos o escribe la dirección manualmente.';
+                button.disabled = false;
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    });
+})();
+</script>
+</body>
+</html>

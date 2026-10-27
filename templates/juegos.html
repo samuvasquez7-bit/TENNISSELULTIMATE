@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#07090c">
+    <meta name="description" content="Juega, practica y mejora tu tenis con los minijuegos de TENNISSEL.">
+    <title>Juegos | TENNISSEL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/juegos.css', v='20261025-premium-3d') }}">
+</head>
+<body>
+{% include 'navbar.html' %}
+<main class="games-page">
+    <div class="games-shell">
+        <section class="games-hero" aria-labelledby="gamesHeroTitle">
+            <div class="games-hero-copy">
+                <span class="games-eyebrow"><span class="eyebrow-pulse" aria-hidden="true"></span> ZONA INTERACTIVA · TENNISSEL</span>
+                <h1 id="gamesHeroTitle">Juega, practica y <span>mejora</span> tu tenis</h1>
+                <p>Entra a la cancha, reta tus reflejos y mejora cada punto. Una experiencia de tenis hecha para disfrutarla desde cualquier dispositivo.</p>
+                <a class="games-button games-button-primary" href="{{ url_for('juego') }}">
+                    <span>Explorar Tennis Arena</span><span class="button-arrow" aria-hidden="true">↗</span>
+                </a>
+                <div class="hero-caption"><span aria-hidden="true"></span> TU PRÓXIMO PARTIDO EMPIEZA AQUÍ</div>
+            </div>
+
+            <div class="games-hero-scene" aria-hidden="true">
+                <div class="scene-glow"></div>
+                <span class="scene-particle particle-one"></span>
+                <span class="scene-particle particle-two"></span>
+                <span class="scene-particle particle-three"></span>
+                <span class="scene-particle particle-four"></span>
+                <div class="hero-court"></div>
+                <div class="hero-platform"><span></span></div>
+                <div class="hero-racket">
+                    <span class="racket-head"><span class="racket-strings"></span></span>
+                    <span class="racket-throat"></span>
+                    <span class="racket-shaft"></span>
+                    <span class="racket-grip"></span>
+                </div>
+                <div class="hero-tennis-ball"><span></span></div>
+                <div class="scene-reflection"></div>
+            </div>
+        </section>
+
+        <section class="games-section" aria-labelledby="gamesListTitle">
+            <div class="games-section-head">
+                <div>
+                    <span class="section-kicker">ELIGE TU DESAFÍO</span>
+                    <h2 id="gamesListTitle">La cancha es tuya</h2>
+                    <p>Minijuegos diseñados para poner a prueba tu instinto y tus reflejos.</p>
+                </div>
+                <span class="games-status"><span aria-hidden="true"></span> 1 JUEGO ACTIVO</span>
+            </div>
+
+            <div class="games-grid">
+                <article class="game-card arena-card tilt-card games-reveal">
+                    <div class="arena-card-content">
+                        <span class="card-tag"><span aria-hidden="true"></span> DISPONIBLE AHORA</span>
+                        <p class="card-overline">EL PARTIDO TE ESPERA</p>
+                        <h3>Tennis Arena</h3>
+                        <p class="arena-description">Enfréntate a la IA, elige tu superficie y domina cada punto en un partido dinámico de tenis.</p>
+                        <a class="games-button games-button-primary" href="{{ url_for('juego') }}">
+                            <span>Jugar ahora</span><span class="button-arrow" aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                    <div class="arena-scene" aria-hidden="true">
+                        <div class="arena-court"></div>
+                        <div class="arena-racket">
+                            <span class="arena-racket-head"></span>
+                            <span class="arena-racket-handle"></span>
+                        </div>
+                        <div class="arena-ball"></div>
+                        <span class="arena-light"></span>
+                    </div>
+                </article>
+
+                <article class="game-card precision-card tilt-card games-reveal">
+                    <div class="precision-art" aria-hidden="true">
+                        <div class="target-rings"><span></span><span></span><span></span><span></span></div>
+                        <div class="target-ball"></div>
+                        <span class="target-beam"></span>
+                    </div>
+                    <div class="precision-copy">
+                        <span class="coming-label"><span aria-hidden="true"></span> PRÓXIMAMENTE</span>
+                        <p class="card-overline">ENTRENA TU PUNTERÍA</p>
+                        <h3>Reto de precisión</h3>
+                        <p>Afina tus golpes, apunta a los objetivos y supera nuevos retos de precisión.</p>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="reward-promo games-reveal" aria-labelledby="rewardPromoTitle">
+            <div class="reward-art" aria-hidden="true">
+                <span class="reward-art-glow"></span>
+                <svg viewBox="0 0 72 72" focusable="false">
+                    <path d="M13 31h46v34H13zM9 22h54v13H9zM34 22v43M36 21c-11 0-19-2-19-9 0-4 3-6 7-6 7 0 12 9 12 15Zm2 0c11 0 19-2 19-9 0-4-3-6-7-6-7 0-12 9-12 15Z" />
+                </svg>
+            </div>
+            <div class="reward-content">
+                <span class="section-kicker">RECOMPENSAS DE JUEGO</span>
+                <h2 id="rewardPromoTitle">Descuentos por jugar</h2>
+                <p id="rewardPromoCopy">Cada 100 victorias en Tennis Arena desbloquean un cupón para usar en el catálogo.</p>
+                <div class="reward-progress-meta">
+                    <span id="rewardVictoryCount">Progreso de victorias</span>
+                    <span id="rewardRemainingCount">Consulta tu progreso</span>
+                </div>
+                <div class="reward-progress-track" id="rewardProgressTrack" role="progressbar" aria-label="Progreso para el próximo descuento" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden>
+                    <div class="reward-progress-fill" id="rewardProgressFill"></div>
+                </div>
+            </div>
+            <div class="reward-actions">
+                <span class="reward-available" id="rewardAvailableCount">Descuentos disponibles: —</span>
+                <button class="games-button reward-claim" id="rewardClaimButton" type="button" hidden>Reclamar descuento</button>
+                <a class="games-button games-button-secondary" href="{{ url_for('productos') }}">Ver descuentos <span aria-hidden="true">↗</span></a>
+            </div>
+            <div class="reward-result" id="rewardResult" role="status" aria-live="polite" hidden>
+                <strong id="rewardPrize"></strong>
+                <code class="reward-code" id="rewardCode"></code>
+                <button class="reward-copy" id="rewardCopyButton" type="button">Copiar código</button>
+            </div>
+            <p class="reward-status" id="rewardStatus" role="status" aria-live="polite"></p>
+        </section>
+
+        <section class="games-info" aria-label="Características de Tennis Arena">
+            <article class="games-info-item games-reveal">
+                <span class="info-icon" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" focusable="false"><path d="M16 3 19 12l9-5-5 9 6 3-10 2-3 8-3-8-10-2 6-3-5-9 9 5z" /></svg>
+                </span>
+                <div><h3>Contra la IA</h3><p>Elige entre dificultad fácil, media o difícil y juega a tu ritmo.</p></div>
+            </article>
+            <article class="games-info-item games-reveal">
+                <span class="info-icon" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" focusable="false"><path d="M4 5h24v22H4zM4 16h24M16 5v22M9 5v22M23 5v22" /></svg>
+                </span>
+                <div><h3>Tu superficie</h3><p>Compite en pista dura, arcilla o césped: tú eliges el escenario.</p></div>
+            </article>
+            <article class="games-info-item games-reveal">
+                <span class="info-icon" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" focusable="false"><rect x="4" y="5" width="18" height="15" rx="2" /><path d="M9 27h8M13 20v7M24 12h4v15h-8V12h2" /></svg>
+                </span>
+                <div><h3>Multidispositivo</h3><p>Juega en computador, tablet o celular con teclado y controles táctiles.</p></div>
+            </article>
+        </section>
+    </div>
+</main>
+<script
+    src="{{ url_for('static', filename='JS/juegos.js', v='20261025-premium-3d') }}"
+    data-progress-url="{{ url_for('api_recompensas_juego') }}"
+    data-claim-url="{{ url_for('api_girar_ruleta_juego') }}"
+    defer></script>
+{% include 'footer.html' ignore missing %}
+</body>
+</html>

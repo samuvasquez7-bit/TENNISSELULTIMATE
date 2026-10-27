@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Denuncias | TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </head>
+<body>
+{% include 'navbar.html' %}
+<main class="admin-crud-page">
+    <div class="admin-crud-shell">
+        <header class="admin-crud-hero">
+            <div><span class="admin-crud-eyebrow">Administración / Comunidad</span><h1>Denuncias de mensajes</h1><p>Al recibir denuncias pendientes de tres personas distintas, la cuenta se suspende hasta que verifiques el caso.</p></div>
+            <div class="admin-crud-count"><strong>{{ denuncias|length }}</strong><span>denuncias</span></div>
+        </header>
+        <form method="get" action="{{ url_for('admin_denuncias') }}" class="admin-crud-search mb-4">
+            <label class="visually-hidden" for="report-search">Buscar denuncias</label>
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input id="report-search" type="search" name="q" value="{{ search }}" maxlength="120" placeholder="Buscar por usuario, mensaje, estado o ID">
+            <button type="submit">Buscar</button>
+            {% if search %}<a class="admin-crud-clear" href="{{ url_for('admin_denuncias') }}">Limpiar</a>{% endif %}
+        </form>
+        <section class="admin-crud-panel">
+            <div class="admin-crud-panel-heading"><div><span>Reportes</span><h2>Listado de denuncias</h2></div></div>
+            <div class="admin-crud-table-wrap">
+                <table class="admin-crud-table">
+                    <thead><tr><th>Fecha</th><th>Denunciante</th><th>Denunciado</th><th>Mensaje</th><th>Estado</th><th>Acciones</th></tr></thead>
+                    <tbody>
+                    {% for denuncia in denuncias %}
+                        <tr>
+                            <td>{{ denuncia.fecha_denuncia }}</td>
+                            <td>{{ denuncia.denunciante }}</td>
+                            <td>{{ denuncia.denunciado }}</td>
+                            <td><span class="admin-crud-cell" title="{{ denuncia.texto }}">{{ denuncia.texto }}</span></td>
+                            <td>
+                                <span class="admin-crud-pill {{ 'is-active' if denuncia.estado != 'pendiente' else 'is-inactive' }}">{{ denuncia.estado }}</span>
+                                {% if denuncia.denunciado_baneado and denuncia.estado == 'pendiente' %}
+                                    <small class="d-block mt-1">Cuenta suspendida; requiere verificación</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if denuncia.estado == 'pendiente' %}
+                                    <form method="post" action="{{ url_for('admin_denuncias') }}" class="admin-crud-row-actions">
+                                        <input type="hidden" name="denuncia_id" value="{{ denuncia.id }}">
+                                        <input type="hidden" name="q" value="{{ search }}">
+                                        <button name="accion" value="banear" class="admin-crud-icon-button is-delete" type="submit" title="Confirmar baneo y revisar denuncias pendientes" aria-label="Confirmar baneo del usuario denunciado"><i class="fa-solid fa-ban"></i></button>
+                                        {% if denuncia.denunciado_baneado %}
+                                            <button name="accion" value="liberar" class="admin-crud-icon-button" type="submit" title="Verificar y liberar usuario" aria-label="Levantar baneo al usuario denunciado"><i class="fa-solid fa-unlock"></i></button>
+                                        {% else %}
+                                            <button name="accion" value="descartar" class="admin-crud-icon-button" type="submit" title="Descartar" aria-label="Descartar denuncia"><i class="fa-solid fa-check"></i></button>
+                                        {% endif %}
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="6" class="admin-crud-empty"><i class="fa-regular fa-folder-open"></i><strong>No hay denuncias</strong><span>Prueba otro filtro o vuelve más tarde.</span></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</main>
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+</body>
+</html>

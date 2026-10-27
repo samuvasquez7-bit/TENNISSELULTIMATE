@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Tiendas y acuerdos | TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+{% include 'navbar.html' %}
+<main class="admin-crud-page">
+    <div class="admin-crud-shell">
+        <header class="admin-crud-hero">
+            <div><span class="admin-crud-eyebrow"><i class="fa-solid fa-store"></i> Marketplace TENNISSEL</span><h1>Incorporación de tiendas</h1><p>Coordina con cada tienda las condiciones de venta, la logística y la aceptación inicial.</p></div>
+            <div class="admin-crud-count"><strong>{{ tiendas|length }}</strong><span>tiendas</span></div>
+        </header>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}<div class="admin-crud-notices" aria-live="polite">{% for category, message in messages %}<div class="alert alert-{{ 'success' if category == 'success' else 'warning' if category == 'warning' else 'danger' }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+        {% endwith %}
+        <section class="admin-crud-panel">
+            <div class="admin-crud-panel-heading admin-crud-list-heading">
+                <div><span>CUENTAS TIENDA</span><h2>Selecciona una conversación</h2></div>
+                <form method="get" action="{{ url_for('admin_tiendas') }}" class="admin-crud-search">
+                    <label class="visually-hidden" for="store-search">Buscar tiendas</label>
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="store-search" type="search" name="q" value="{{ search }}" maxlength="120" placeholder="Nombre, correo, estado o ubicación">
+                    <button type="submit">Buscar</button>
+                    {% if search %}<a class="admin-crud-clear" href="{{ url_for('admin_tiendas') }}">Limpiar</a>{% endif %}
+                </form>
+            </div>
+            <div class="admin-crud-table-wrap">
+                <table class="admin-crud-table">
+                    <thead><tr><th>Tienda</th><th>Correo</th><th>Estado</th><th>Ubicación</th><th>Acuerdo</th><th>Mensajes</th><th>Acción</th></tr></thead>
+                    <tbody>
+                    {% for tienda in tiendas %}
+                    <tr>
+                        <td>{{ tienda.username }}</td><td>{{ tienda.email }}</td>
+                        <td><span class="admin-crud-pill {{ 'is-active' if tienda.estado == 'activo' else 'is-inactive' }}">{{ {'conversacion':'En conversación','acuerdo_propuesto':'Acuerdo propuesto','activo':'Acuerdo aceptado'}.get(tienda.estado, tienda.estado) }}</span></td>
+                        <td>{{ tienda.ubicacion_ciudad or 'Pendiente' }}{% if tienda.ubicacion_direccion %} · {{ tienda.ubicacion_direccion }}{% endif %}</td>
+                        <td>{{ 'Aceptado' if tienda.tienda_acepto else ('Propuesto' if tienda.acuerdo else 'Pendiente') }}</td>
+                        <td>{% if tienda.admin_pendiente %}<span class="admin-crud-pill is-inactive">Nuevo mensaje</span>{% else %}<span class="admin-crud-muted">Al día</span>{% endif %}</td>
+                        <td><a class="admin-crud-secondary" href="{{ url_for('admin_tiendas', tienda_id=tienda.id, q=search) }}">Abrir chat</a></td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="admin-crud-empty"><strong>No hay cuentas de tienda</strong></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% if seleccionada %}
+        <section class="admin-crud-panel">
+            <div class="admin-crud-panel-heading"><div><span>CONVERSACIÓN INICIAL</span><h2>{{ seleccionada.username }}</h2></div></div>
+            {% if seleccionada.ubicacion_ciudad and seleccionada.ubicacion_direccion %}
+            <p class="admin-crud-muted">Ubicación compartida: {{ seleccionada.ubicacion_ciudad }} · {{ seleccionada.ubicacion_direccion }}
+                <a href="https://www.google.com/maps/search/?api=1&query={{ (seleccionada.lat|string ~ ',' ~ seleccionada.lng|string)|urlencode if seleccionada.lat is not none and seleccionada.lng is not none else (seleccionada.ubicacion_ciudad ~ ' ' ~ seleccionada.ubicacion_direccion)|urlencode }}" target="_blank" rel="noopener noreferrer">Ver mapa</a>
+            </p>
+            {% else %}<p class="admin-crud-muted">La tienda aún no ha compartido su ubicación.</p>{% endif %}
+            <div style="max-height:420px;overflow:auto;margin:16px 0">
+                {% for mensaje in seleccionada.mensajes %}
+                <article class="admin-crud-panel" style="padding:12px;margin-bottom:8px">
+                    <strong>{{ mensaje.emisor_nombre or 'TENNISSEL' }}</strong> <small>{{ mensaje.created_at }}</small>
+                    <p style="white-space:pre-wrap;margin:8px 0 0">{{ mensaje.texto }}</p>
+                    {% if mensaje.tipo == 'ubicacion' %}<a href="https://www.google.com/maps/search/?api=1&query={{ mensaje.texto|urlencode }}" target="_blank" rel="noopener noreferrer">Abrir ubicación compartida</a>{% endif %}
+                </article>
+                {% endfor %}
+            </div>
+            <form method="post" class="admin-crud-form">
+                <input type="hidden" name="tienda_id" value="{{ seleccionada.id }}">
+                <input type="hidden" name="q" value="{{ search }}">
+                <input type="hidden" name="accion" value="mensaje">
+                <div class="admin-crud-field admin-crud-field-wide"><label for="store-message">Responder a {{ seleccionada.username }}</label><textarea id="store-message" name="texto" rows="3" maxlength="2000" required></textarea></div>
+                <div class="admin-crud-form-actions"><button class="admin-crud-primary" type="submit"><i class="fa-solid fa-paper-plane"></i> Enviar mensaje</button></div>
+            </form>
+            <form method="post" class="admin-crud-form">
+                <input type="hidden" name="tienda_id" value="{{ seleccionada.id }}">
+                <input type="hidden" name="q" value="{{ search }}">
+                <input type="hidden" name="accion" value="acuerdo">
+                <div class="admin-crud-field admin-crud-field-wide"><label for="store-agreement">Condiciones comerciales y operativas</label><textarea id="store-agreement" name="acuerdo" rows="8" maxlength="12000" required placeholder="Define explícitamente quién cobra, cómo se liquida cada venta, comisiones si aplican, quién prepara y envía los pedidos, devoluciones, tiempos, atención al cliente y responsabilidades.">{{ seleccionada.acuerdo or '' }}</textarea></div>
+                <div class="admin-crud-form-actions"><button class="admin-crud-primary" type="submit"><i class="fa-solid fa-file-signature"></i> {{ 'Actualizar propuesta' if seleccionada.acuerdo else 'Enviar propuesta de acuerdo' }}</button></div>
+            </form>
+        </section>
+        {% endif %}
+    </div>
+</main>
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Editar producto | TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="store-page">
+{% include 'navbar.html' %}
+<main class="store-shell">
+    <header class="store-heading">
+        <span>CUENTA TIENDA · PRODUCTO {{ producto.id }}</span>
+        <h1>Editar producto</h1>
+        <p>Actualiza la ficha, el precio o el inventario de tu producto.</p>
+    </header>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}<div class="store-alert store-alert-{{ category }}" role="status">{{ message }}</div>{% endfor %}{% endif %}
+    {% endwith %}
+    <section class="store-form-panel store-edit-panel">
+        <div class="store-panel-title"><i class="fa-solid fa-pen-to-square"></i><div><span>FICHA DE PRODUCTO</span><h2>{{ producto.nombre }}</h2></div></div>
+        <form method="post" enctype="multipart/form-data" class="store-form">
+            <section class="store-form-section">
+                <h3><span>01</span> Información principal</h3>
+                <label>Nombre<input type="text" name="nombre" maxlength="150" required value="{{ producto.nombre }}"></label>
+                <label>Descripción<textarea name="descripcion" maxlength="2000" rows="4" required>{{ producto.descripcion_larga or producto.descripcion_corta or '' }}</textarea></label>
+                <div class="store-form-grid">
+                    <label>Categoría<select name="categoria_id" required>{% for categoria in categorias %}<option value="{{ categoria.id }}" {% if producto.categoria_id == categoria.id %}selected{% endif %}>{{ categoria.nombre }}</option>{% endfor %}</select></label>
+                    <label>Subcategoría<input type="text" name="subcategoria" maxlength="100" value="{{ producto.subcategoria or '' }}"></label>
+                    <label>Marca<input type="text" name="marca" maxlength="50" value="{{ producto.marca or '' }}"></label>
+                    <label>SKU<input type="text" name="sku" maxlength="50" value="{{ producto.sku or '' }}"></label>
+                </div>
+            </section>
+            <section class="store-form-section">
+                <h3><span>02</span> Precio e inventario</h3>
+                <div class="store-form-grid">
+                    <label>Precio actual<input type="number" name="precio" min="1" step="0.01" required value="{{ producto.precio }}"></label>
+                    <label>Precio anterior <small>Opcional · debe ser mayor que el actual para mostrar un descuento</small><input type="number" name="precio_anterior" min="0.01" step="0.01" value="{{ producto.precio_anterior or '' }}"></label>
+                    <label>Stock disponible<input type="number" name="stock" min="0" step="1" required value="{{ producto.stock }}"></label>
+                    <label>Peso en kg<input type="number" name="peso" min="0" step="0.01" value="{{ producto.peso or '' }}"></label>
+                    <label>Color<input type="text" name="color" maxlength="50" value="{{ producto.color or '' }}"></label>
+                    <label>Talla o medida<input type="text" name="talla" maxlength="50" value="{{ producto.talla or '' }}"></label>
+                </div>
+            </section>
+            <section class="store-form-section">
+                <h3><span>03</span> Características y variaciones</h3>
+                <label>Características <small>Una por línea</small><textarea name="caracteristicas" maxlength="3000" rows="4">{{ caracteristicas }}</textarea></label>
+                <fieldset class="store-variants">
+                    <legend>Opciones e inventario por variación</legend>
+                    <p>Si el producto no tiene variantes, deja los campos vacíos.</p>
+                    <div id="edit-variant-list">
+                        {% for variacion in variaciones %}
+                        <div class="store-variant-row">
+                            <input name="variacion_tipo[]" maxlength="50" aria-label="Tipo de variación" placeholder="Tipo: talla, color..." value="{{ variacion.tipo or '' }}">
+                            <input name="variacion_valor[]" maxlength="80" aria-label="Valor de variación" placeholder="Valor: L, rojo..." value="{{ variacion.valor or '' }}">
+                            <input name="variacion_stock[]" type="number" min="0" step="1" aria-label="Stock de variación" placeholder="Stock" value="{{ variacion.stock if variacion.stock is not none else '' }}">
+                            <button type="button" class="store-variant-remove" aria-label="Quitar variación" title="Quitar variación"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        {% else %}
+                        <div class="store-variant-row">
+                            <input name="variacion_tipo[]" maxlength="50" aria-label="Tipo de variación" placeholder="Tipo: talla, color...">
+                            <input name="variacion_valor[]" maxlength="80" aria-label="Valor de variación" placeholder="Valor: L, rojo...">
+                            <input name="variacion_stock[]" type="number" min="0" step="1" aria-label="Stock de variación" placeholder="Stock">
+                            <button type="button" class="store-variant-remove" aria-label="Quitar variación" title="Quitar variación"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" id="edit-add-variant" class="store-secondary-button"><i class="fa-solid fa-plus"></i> Agregar variación</button>
+                </fieldset>
+            </section>
+            <section class="store-form-section">
+                <h3><span>04</span> Fotografía</h3>
+                <div class="store-edit-image"><img src="{{ producto.imagen_principal|product_image_url }}" alt="Fotografía actual de {{ producto.nombre }}" width="320" height="240" loading="lazy"></div>
+                <label>Nueva fotografía <small>Opcional · PNG, JPG, GIF o WEBP</small><input type="file" name="imagen" accept="image/png,image/jpeg,image/gif,image/webp"></label>
+            </section>
+            <div class="store-edit-actions">
+                <a class="store-secondary-button" href="{{ url_for('tienda_productos') }}">Cancelar</a>
+                <button class="store-submit" type="submit"><i class="fa-solid fa-floppy-disk"></i> Guardar cambios</button>
+            </div>
+        </form>
+    </section>
+</main>
+{% include 'footer.html' %}
+<script>
+(() => {
+    const list = document.getElementById('edit-variant-list');
+    const add = document.getElementById('edit-add-variant');
+    if (!list || !add) return;
+
+    add.addEventListener('click', () => {
+        const row = document.createElement('div');
+        row.className = 'store-variant-row';
+        row.innerHTML = '<input name="variacion_tipo[]" maxlength="50" aria-label="Tipo de variación" placeholder="Tipo: talla, color..."><input name="variacion_valor[]" maxlength="80" aria-label="Valor de variación" placeholder="Valor: L, rojo..."><input name="variacion_stock[]" type="number" min="0" step="1" aria-label="Stock de variación" placeholder="Stock"><button type="button" class="store-variant-remove" aria-label="Quitar variación" title="Quitar variación"><i class="fa-solid fa-xmark"></i></button>';
+        list.append(row);
+    });
+
+    list.addEventListener('click', (event) => {
+        const remove = event.target.closest('.store-variant-remove');
+        if (remove) remove.closest('.store-variant-row').remove();
+    });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfiles de Usuarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Cambia tu etiqueta link por esta: -->
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+
+
+
+
+<main class="admin-crud-page">
+<div class="admin-crud-shell">
+    <header class="admin-crud-hero">
+        <div>
+            <span class="admin-crud-eyebrow"><i class="fa-solid fa-users"></i> Administración</span>
+            <h1>Gestión de Usuarios</h1>
+            <p>Administra cuentas, datos de contacto y roles desde un solo lugar.</p>
+        </div>
+        <div class="admin-crud-count"><strong>{{ usuarios|length }}</strong><span>usuarios</span></div>
+    </header>
+
+
+
+<!-- Mensajes Flash Estilizados -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="mb-4">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show bg-dark text-light border-secondary" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+
+
+
+    <section class="admin-crud-panel">
+        <div class="admin-crud-panel-heading admin-crud-list-heading">
+            <div><span>Directorio</span><h2>Usuarios registrados</h2></div>
+            <label class="admin-crud-search admin-crud-user-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input id="user-search" type="search" placeholder="Buscar por usuario, correo, teléfono o rol" autocomplete="off">
+            </label>
+        </div>
+    <div class="admin-crud-table-wrap">
+
+
+        <table class="admin-crud-table">
+
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Foto</th>
+
+                    <th>Usuario</th>
+
+                    <th>Email</th>
+
+                    <th>Teléfono</th>
+
+                    <th>Rol</th>
+
+                    <th>Fecha de creación</th>
+
+                    <th>Acciones</th>
+
+
+                </tr>
+
+
+            </thead>
+
+
+
+            <tbody>
+
+
+
+            {% for usuario in usuarios %}
+
+
+                <tr data-search="{{ usuario.id }} {{ usuario.username }} {{ usuario.email }} {{ usuario.telefono }} {{ usuario.rol }}">
+
+
+                    <td>
+                        {{ usuario.id }}
+                    </td>
+
+                    <td>
+                        <img src="{{ usuario.foto }}" alt="Foto de {{ usuario.username }}" width="42" height="42" style="border-radius: 50%; object-fit: cover;" onerror="this.onerror=null;this.src='{{ url_for('static', filename='IMG/avatar-tennisel-1.png', v='20261005-7') }}'">
+                    </td>
+
+
+
+                    <td>
+                        {{ usuario.username }}
+                    </td>
+
+
+
+                    <td>
+                        {{ usuario.email }}
+                    </td>
+
+
+
+                    <td>
+                        {{ usuario.telefono }}
+                    </td>
+
+
+
+                    <td>
+
+
+                        {% if usuario.rol == 'admin' %}
+
+                            <span class="ts-admin-role ts-admin-role-admin">
+                                Administrador
+                            </span>
+
+
+                        {% elif usuario.rol == 'cliente' %}
+
+
+                            <span class="ts-admin-role ts-admin-role-cliente">
+                                Cliente
+                            </span>
+
+
+                        {% elif usuario.rol == 'premium' %}
+                            <span class="admin-crud-pill is-active">Premium</span>
+                        {% elif usuario.rol == 'jugador' %}
+                            <span class="admin-crud-pill">Jugador</span>
+                        {% elif usuario.rol == 'profesor' %}
+                            <span class="admin-crud-pill">Profesor</span>
+                        {% elif usuario.rol == 'tienda' %}
+                            <span class="admin-crud-pill">Tienda</span>
+                        {% else %}
+
+
+                            <span class="ts-admin-role ts-admin-role-visita">
+                                Visita
+                            </span>
+
+
+                        {% endif %}
+
+
+                    </td>
+
+
+
+
+                    <td>
+
+                        {{ usuario.fecha_creacion }}
+
+                    </td>
+
+
+
+
+                    <td>
+
+
+                        <div class="ts-admin-actions">
+
+
+                            <a href="{{ url_for('admin_actualizar_usuario', id=usuario.id) }}"
+                               class="ts-admin-btn ts-admin-btn-edit">
+
+                                Actualizar
+
+                            </a>
+
+
+
+
+
+                            {% if usuario.id != session['user_id'] %}
+
+
+<form method="POST"
+      action="{{ url_for('admin_perfiles') }}"
+      onsubmit="return confirm('¿Seguro que deseas eliminar este usuario?');">
+
+
+    <input type="hidden"
+           name="usuario_id"
+           value="{{ usuario.id }}">
+
+    <input type="hidden" name="action" value="eliminar">
+
+    <button type="submit"
+            class="ts-admin-btn ts-admin-btn-delete">
+
+        Eliminar
+
+    </button>
+
+
+</form>
+
+
+                            {% endif %}
+
+
+
+                        </div>
+
+
+                    </td>
+
+
+
+
+                </tr>
+
+
+
+            {% endfor %}
+            <tr id="user-empty" {% if usuarios %}hidden{% endif %}>
+                <td class="admin-crud-empty" colspan="7">
+                    <i class="fa-regular fa-face-frown"></i>
+                    <strong>No hay usuarios que coincidan</strong>
+                    <span>Prueba con otro término de búsqueda.</span>
+                </td>
+            </tr>
+
+
+
+
+            </tbody>
+
+
+
+        </table>
+
+
+
+    </div>
+
+    </section>
+</div>
+</main>
+
+<script>
+(() => {
+    const search = document.getElementById('user-search');
+    const rows = [...document.querySelectorAll('tr[data-search]')];
+    const empty = document.getElementById('user-empty');
+    search?.addEventListener('input', () => {
+        const term = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+        rows.forEach(row => {
+            const matches = row.dataset.search.toLocaleLowerCase().includes(term);
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        empty.hidden = visible !== 0;
+    });
+})();
+</script>
+
+
+
+
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+
+
+
+</body>
+
+</html>

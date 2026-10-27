@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualizar usuario</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </head>
+<body>
+{% include 'navbar.html' %}
+
+<main class="admin-crud-page">
+    <div class="admin-crud-shell">
+        <header class="admin-crud-hero">
+            <div>
+                <span class="admin-crud-eyebrow"><i class="fa-solid fa-user-pen"></i> Administración</span>
+                <h1>Actualizar usuario</h1>
+                <p>Modifica la cuenta de {{ usuario.username }} y conserva sus permisos actuales.</p>
+            </div>
+        </header>
+
+        <section class="admin-crud-panel">
+            <div class="admin-crud-panel-heading">
+                <div><span>Cuenta #{{ usuario.id }}</span><h2>Datos del usuario</h2></div>
+            </div>
+            <form method="POST" enctype="multipart/form-data" class="admin-crud-form">
+                <div class="admin-crud-field">
+                    <label for="username">Nombre de usuario <span>*</span></label>
+                    <input id="username" type="text" name="username" value="{{ usuario.username }}" required>
+                </div>
+                <div class="admin-crud-field">
+                    <label for="email">Correo electrónico <span>*</span></label>
+                    <input id="email" type="email" name="email" value="{{ usuario.email }}" required>
+                </div>
+                <div class="admin-crud-field">
+                    <label for="telefono">Teléfono</label>
+                    <input id="telefono" type="tel" name="telefono" value="{{ usuario.telefono or '' }}">
+                </div>
+                <div class="admin-crud-field">
+                    <label for="apellido">Apellido</label>
+                    <input id="apellido" type="text" name="apellido" value="{{ usuario.apellido or '' }}">
+                </div>
+                <div class="admin-crud-field">
+                    <label for="fecha_nacimiento">Fecha de nacimiento</label>
+                    <input id="fecha_nacimiento" type="date" name="fecha_nacimiento" value="{{ usuario.fecha_nacimiento or '' }}">
+                </div>
+                <div class="admin-crud-field">
+                    <label for="nivel">Nivel de juego</label>
+                    <select id="nivel" name="nivel">
+                        {% for level in ['principiante', 'intermedio', 'avanzado', 'profesional'] %}
+                            <option value="{{ level }}" {% if usuario.nivel == level %}selected{% endif %}>{{ level|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="admin-crud-field">
+                    <label for="mano">Mano dominante</label>
+                    <select id="mano" name="mano">
+                        {% for hand in ['diestro', 'zurdo', 'ambidiestro'] %}
+                            <option value="{{ hand }}" {% if usuario.mano == hand %}selected{% endif %}>{{ hand|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="admin-crud-field">
+                    <label for="reves">Revés</label>
+                    <select id="reves" name="reves">
+                        {% for backhand in ['una_mano', 'dos_manos'] %}
+                            <option value="{{ backhand }}" {% if usuario.reves == backhand %}selected{% endif %}>{{ backhand|replace('_', ' ')|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="admin-crud-field">
+                    <label for="club">Club</label>
+                    <input id="club" type="text" name="club" value="{{ usuario.club or '' }}">
+                </div>
+                <div class="admin-crud-field admin-crud-field-wide">
+                    <label for="biografia">Biografía</label>
+                    <textarea id="biografia" name="biografia" rows="3">{{ usuario.biografia or '' }}</textarea>
+                </div>
+                <div class="admin-crud-field admin-crud-field-wide">
+                    <label for="foto_perfil">Foto de perfil</label>
+                    <img id="foto-perfil-preview" src="{{ usuario.foto }}" alt="Foto de {{ usuario.username }}" width="88" height="88" style="display: block; border-radius: 50%; object-fit: cover; margin-bottom: 10px;" onerror="this.onerror=null;this.src='{{ url_for('static', filename='IMG/avatar-tennisel-1.png', v='20261005-7') }}'">
+                    <input id="foto_perfil" type="file" name="foto_perfil" accept="image/*">
+                </div>
+                <div class="admin-crud-field">
+                    <label for="password">Nueva contraseña</label>
+                    <input id="password" type="password" name="password" autocomplete="new-password" placeholder="Déjalo vacío para conservarla">
+                </div>
+                <div class="admin-crud-field">
+                    <label for="rol">Rol del usuario <span>*</span></label>
+                    <select id="rol" name="rol" required>
+                        {% for role, label in [('cliente', 'Cliente'), ('admin', 'Administrador'), ('visita', 'Visita'), ('premium', 'Premium'), ('jugador', 'Jugador'), ('profesor', 'Profesor'), ('tienda', 'Tienda')] %}
+                            <option value="{{ role }}" {% if usuario.rol == role %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="admin-crud-form-actions">
+                    <button type="submit" class="admin-crud-primary"><i class="fa-solid fa-floppy-disk"></i> Guardar cambios</button>
+                    <a href="{{ url_for('admin_perfiles') }}" class="admin-crud-secondary">Volver a usuarios</a>
+                </div>
+            </form>
+        </section>
+    </div>
+</main>
+
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+<script>
+    const fotoPerfilInput = document.getElementById('foto_perfil');
+    const fotoPerfilPreview = document.getElementById('foto-perfil-preview');
+    fotoPerfilInput?.addEventListener('change', () => {
+        const file = fotoPerfilInput.files?.[0];
+        if (file) fotoPerfilPreview.src = URL.createObjectURL(file);
+    });
+</script>
+</body>
+</html>

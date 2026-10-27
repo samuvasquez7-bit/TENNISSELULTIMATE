@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Seguimiento de pedidos | TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #121212; color: #fff; }
+        .tracking-page { max-width: 1120px; margin: 0 auto; padding: 106px 22px 64px; }
+        .tracking-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; padding: 24px 26px; margin-bottom: 28px; border: 1px solid #303030; border-left: 4px solid var(--verde-neon); background: #1a1a1a; }
+        .tracking-heading span { color: var(--verde-neon); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .tracking-heading h1 { margin: 7px 0; font-size: 34px; }
+        .tracking-heading p { color: #a7b0aa; margin: 0; }
+        .tracking-heading-mark { flex: 0 0 auto; color: var(--verde-neon); font-size: 34px; }
+        .tracking-tabs { display: flex; gap: 8px; margin: 0 0 16px; border-bottom: 1px solid #303030; }
+        .tracking-tab { padding: 11px 14px; color: #9ba69f; text-decoration: none; border-bottom: 2px solid transparent; font-size: 13px; }
+        .tracking-tab.active { color: var(--verde-neon); border-color: var(--verde-neon); }
+        .tracking-filters { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(180px, 240px) auto auto; align-items: center; gap: 9px; margin-bottom: 20px; }
+        .tracking-filters input, .tracking-filters select { min-width: 0; height: 42px; padding: 0 12px; color: #eee; background: #111; border: 1px solid #383838; border-radius: 4px; }
+        .tracking-filter-submit, .tracking-filter-clear { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 14px; border: 1px solid var(--verde-neon); border-radius: 4px; color: #000; background: var(--verde-neon); font-size: 12px; font-weight: 700; text-decoration: none; }
+        .tracking-filter-clear { color: #d9e2dc; background: transparent; border-color: #465149; }
+        .tracking-order { padding: 23px 25px; margin-bottom: 18px; border: 1px solid #303030; border-radius: 8px; background: #1a1a1a; }
+        .tracking-order-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+        .tracking-order h2 { font-size: 19px; margin: 0 0 5px; }
+        .tracking-meta { color: #a7b0aa; font-size: 13px; }
+        .tracking-status { padding: 8px 12px; border: 1px solid var(--verde-neon); border-radius: 3px; color: var(--verde-neon); background: #101510; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .tracking-status.incidente { color: #ff9b7e; border-color: #ff7654; }
+        .tracking-status.done { color: var(--dorado); border-color: var(--dorado); }
+        .tracking-progress { overflow-x: auto; margin: 22px 0 8px; padding: 4px 0 10px; }
+        .tracking-steps { min-width: 700px; display: grid; grid-template-columns: repeat(7, minmax(90px, 1fr)); position: relative; }
+        .tracking-steps::before, .tracking-steps::after { content: ''; position: absolute; top: 7px; left: 7%; height: 2px; }
+        .tracking-steps::before { right: 7%; background: #39443d; }
+        .tracking-steps::after { width: 86%; max-width: 86%; background: var(--verde-neon); transform-origin: left; transform: scaleX(var(--progress)); }
+        .tracking-step { position: relative; z-index: 1; display: grid; justify-items: center; gap: 8px; padding: 0 4px; color: #77827a; text-align: center; font-size: 10px; line-height: 1.3; }
+        .tracking-step-dot { width: 16px; height: 16px; border: 2px solid #555; border-radius: 50%; background: #121212; }
+        .tracking-step.complete, .tracking-step.current { color: #d8e0da; }
+        .tracking-step.complete .tracking-step-dot { border-color: var(--verde-neon); background: var(--verde-neon); }
+        .tracking-step.current .tracking-step-dot { box-shadow: 0 0 0 4px rgba(34,139,34,.18); }
+        .tracking-incident-note { margin: 10px 0; padding: 12px 14px; border-left: 3px solid #ff7654; color: #ffd0c1; background: #241916; font-size: 13px; }
+        .tracking-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 17px 0; margin: 12px 0; border-top: 1px solid #303030; border-bottom: 1px solid #303030; }
+        .tracking-summary span { color: #87918a; display: block; font-size: 11px; text-transform: uppercase; margin-bottom: 5px; }
+        .tracking-summary strong { font-size: 14px; overflow-wrap: anywhere; }
+        .tracking-summary .tracking-eta strong { color: var(--verde-neon); font-size: 16px; }
+        .tracking-products { color: #c5cdc7; font-size: 13px; padding-bottom: 16px; }
+        .tracking-products-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 9px; }
+        .tracking-product { display: flex; align-items: center; gap: 8px; padding: 6px 9px 6px 6px; border: 1px solid #303d34; border-radius: 9px; background: #151b17; }
+        .tracking-product img { width: 42px; height: 42px; border-radius: 6px; object-fit: cover; }
+        .tracking-address { padding: 12px 14px; margin-bottom: 14px; border-left: 2px solid #55665b; background: #171d19; color: #c8d1cb; font-size: 13px; line-height: 1.65; }
+        .tracking-archive { display: flex; justify-content: flex-end; padding-top: 14px; }
+        .tracking-archive button { min-height: 38px; padding: 0 12px; color: #cbd3cd; background: transparent; border: 1px solid #465149; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .tracking-archive button:hover { color: #fff; border-color: var(--verde-neon); }
+        .tracking-archived-at { color: #849188; font-size: 12px; padding-top: 14px; }
+        .tracking-extra { display: flex; flex-wrap: wrap; gap: 12px 24px; color: #a7b0aa; font-size: 13px; padding-bottom: 18px; }
+        .tracking-extra a { color: var(--verde-neon); }
+        .tracking-timeline { border-left: 1px solid #44534a; margin: 14px 0 0 6px; padding: 2px 0 0 20px; }
+        .tracking-event { position: relative; padding: 0 0 19px; }
+        .tracking-event::before { content: ''; position: absolute; width: 10px; height: 10px; left: -26px; top: 4px; background: var(--verde-neon); border: 2px solid #1a1a1a; border-radius: 50%; box-shadow: 0 0 0 1px var(--verde-neon); }
+        .tracking-event strong { display: block; font-size: 13px; }
+        .tracking-event p { margin: 3px 0; color: #a7b0aa; font-size: 13px; }
+        .tracking-event time { color: #727c75; font-size: 11px; }
+        .tracking-empty { padding: 50px 0; color: #a7b0aa; }
+        @media (max-width: 760px) { .tracking-filters { grid-template-columns: 1fr 1fr; }.tracking-filters input { grid-column: 1 / -1; } }
+        @media (max-width: 520px) { .tracking-page { padding: 90px 16px 40px; }.tracking-heading { align-items: flex-start; padding: 20px 16px; }.tracking-heading h1 { font-size: 26px; }.tracking-heading-mark { font-size: 25px; }.tracking-order { padding: 19px 15px; }.tracking-summary { grid-template-columns: 1fr; gap: 12px; }.tracking-filters { grid-template-columns: 1fr; }.tracking-filters input { grid-column: auto; }.tracking-filter-submit, .tracking-filter-clear { width: 100%; } }
+    </style>
+</head>
+<body>
+{% include 'navbar.html' %}
+<main class="tracking-page">
+    <header class="tracking-heading">
+        <span>Cuenta / Seguimiento</span>
+        <h1>Mis pedidos</h1>
+        <p>Estado, recorrido y fecha estimada de cada despacho.</p>
+        <span class="tracking-heading-mark" aria-hidden="true">↗</span>
+    </header>
+
+    <nav class="tracking-tabs" aria-label="Listas de pedidos">
+        <a class="tracking-tab {{ 'active' if vista_envios == 'activos' else '' }}" href="{{ url_for('mis_envios', vista='activos') }}">Activos</a>
+        <a class="tracking-tab {{ 'active' if vista_envios == 'archivados' else '' }}" href="{{ url_for('mis_envios', vista='archivados') }}">Archivados</a>
+    </nav>
+    <form class="tracking-filters" method="get" action="{{ url_for('mis_envios') }}">
+        <input type="hidden" name="vista" value="{{ vista_envios }}">
+        <input type="search" name="q" value="{{ buscar }}" placeholder="Buscar por envío, factura o ciudad" aria-label="Buscar pedidos">
+        <select name="estado" aria-label="Filtrar por estado">
+            <option value="">Todos los estados</option>
+            {% for codigo, etiqueta in estados_envio.items() %}<option value="{{ codigo }}" {% if estado_filtro == codigo %}selected{% endif %}>{{ etiqueta }}</option>{% endfor %}
+        </select>
+        <button class="tracking-filter-submit" type="submit"><i class="fas fa-filter"></i> Filtrar</button>
+        <a class="tracking-filter-clear" href="{{ url_for('mis_envios', vista=vista_envios) }}">Limpiar</a>
+    </form>
+
+    {% for envio in envios %}
+    <article class="tracking-order">
+        <div class="tracking-order-head">
+            <div>
+                <h2>Envío {{ envio.numero_envio }}</h2>
+                <div class="tracking-meta">{{ envio.factura_formateada }} · Pedido del {{ envio.created_at.strftime('%d/%m/%Y %H:%M') if envio.created_at else 'fecha no disponible' }} · {{ envio.tienda_nombre }}{% if envio.eventos %} · Actualizado {{ envio.eventos[0].created_at.strftime('%d/%m/%Y %H:%M') if envio.eventos[0].created_at else '' }}{% endif %}</div>
+            </div>
+            <span class="tracking-status {{ 'done' if envio.estado == 'entregado' else ('incidente' if envio.estado == 'incidencia' else '') }}">{{ estados_envio.get(envio.estado, envio.estado) }}</span>
+        </div>
+        <div class="tracking-progress" aria-label="Progreso del pedido: {{ estados_envio.get(envio.estado, envio.estado) }}">
+            <div class="tracking-steps" style="--progress: {{ (envio.estado_progreso_indice / (pasos_envio|length - 1)) }}">
+                {% for paso in pasos_envio %}
+                <div class="tracking-step {{ 'complete' if loop.index0 < envio.estado_progreso_indice else ('current' if loop.index0 == envio.estado_progreso_indice else '') }}">
+                    <span class="tracking-step-dot"></span>
+                    <span>{{ estados_envio[paso] }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% if envio.estado == 'incidencia' %}<div class="tracking-incident-note">La tienda reportó una novedad. El progreso se conserva y aparecerá aquí cuando se resuelva.</div>{% endif %}
+        <div class="tracking-summary">
+            <div><span>Entrega estimada</span><strong>{% if envio.fecha_estimada %}{{ envio.fecha_estimada.strftime('%d/%m/%Y') }}{% else %}Pendiente de actualización{% endif %}</strong></div>
+            <div class="tracking-eta"><span>Tiempo estimado</span><strong>{% if envio.estado == 'entregado' %}Pedido entregado{% elif envio.entrega_vencida %}Fecha estimada vencida; esperando actualización de la tienda{% elif envio.fecha_estimada %}{% if envio.dias_restantes == 0 %}Entrega estimada para hoy{% else %}Faltan {{ envio.dias_restantes }} día{{ 's' if envio.dias_restantes != 1 else '' }}{% endif %}{% else %}Por confirmar{% endif %}</strong></div>
+            <div><span>Destinatario</span><strong>{{ envio.nombre_recibe or 'Titular del pedido' }}</strong></div>
+        </div>
+        <div class="tracking-address"><strong>Dirección de entrega</strong><br>{{ envio.direccion_envio }}{% if envio.complemento_envio %}, {{ envio.complemento_envio }}{% endif %}<br>{% if envio.barrio_envio %}{{ envio.barrio_envio }}, {% endif %}{{ envio.ciudad_envio }}{% if envio.departamento_envio %}, {{ envio.departamento_envio }}{% endif %}{% if envio.codigo_postal_envio %} · CP {{ envio.codigo_postal_envio }}{% endif %}<br>Celular {{ envio.telefono_envio }}{% if envio.instrucciones_envio %}<br>Indicaciones: {{ envio.instrucciones_envio }}{% endif %}</div>
+        <div class="tracking-products"><strong>Productos:</strong><div class="tracking-products-list">{% for producto in envio.productos %}<span class="tracking-product"><img src="{{ producto.imagen_principal|product_image_url }}" alt="" loading="lazy"><span>{{ producto.nombre }} × {{ producto.cantidad }}</span></span>{% else %}<span>Detalle no disponible</span>{% endfor %}</div></div>
+        {% if envio.transportadora or envio.codigo_seguimiento or envio.url_seguimiento %}
+        <div class="tracking-extra">
+            {% if envio.transportadora %}<span>Transportadora: <strong>{{ envio.transportadora }}</strong></span>{% endif %}
+            {% if envio.codigo_seguimiento %}<span>Guía: <strong>{{ envio.codigo_seguimiento }}</strong></span>{% endif %}
+            {% if envio.url_seguimiento %}<a href="{{ envio.url_seguimiento }}" target="_blank" rel="noopener noreferrer">Abrir seguimiento de transportadora</a>{% endif %}
+        </div>
+        {% endif %}
+        <div class="tracking-timeline" aria-label="Historial de seguimiento">
+            {% for evento in envio.eventos|reverse %}
+            <div class="tracking-event">
+                <strong>{{ estados_envio.get(evento.estado, evento.estado) }}</strong>
+                <p>{{ evento.descripcion }}</p>
+                <time>{{ evento.created_at.strftime('%d/%m/%Y %H:%M') if evento.created_at else '' }}</time>
+            </div>
+            {% endfor %}
+        </div>
+        {% if vista_envios == 'activos' and envio.estado == 'entregado' %}
+        <form class="tracking-archive" method="post" action="{{ url_for('archivar_envio', envio_id=envio.id) }}" onsubmit="return confirm('¿Quitar este envío de la lista activa? La factura y el historial se conservarán en Archivados.');">
+            <input type="hidden" name="vista" value="{{ vista_envios }}">
+            <button type="submit"><i class="fas fa-box-archive"></i> Eliminar de activos</button>
+        </form>
+        {% elif vista_envios == 'archivados' and envio.archivado_por_usuario_at %}
+        <div class="tracking-archived-at">Archivado el {{ envio.archivado_por_usuario_at.strftime('%d/%m/%Y %H:%M') }}</div>
+        {% endif %}
+    </article>
+    {% else %}
+    <div class="tracking-empty">{% if buscar or estado_filtro %}No hay pedidos que coincidan con los filtros. <a href="{{ url_for('mis_envios', vista=vista_envios) }}">Limpiar filtros</a>{% elif vista_envios == 'archivados' %}Todavía no has archivado envíos entregados.{% else %}Aún no tienes pedidos activos para seguir.{% endif %}</div>
+    {% endfor %}
+</main>
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+</body>
+</html>

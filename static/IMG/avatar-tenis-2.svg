@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#b6f2df"/><stop offset=".55" stop-color="#4fb7a1"/><stop offset="1" stop-color="#153f59"/></linearGradient>
+    <linearGradient id="shirt" x2="1" y2="1"><stop stop-color="#ffc84e"/><stop offset="1" stop-color="#f07835"/></linearGradient>
+    <clipPath id="round"><circle cx="128" cy="128" r="122"/></clipPath>
+    <style>.twinkle{animation:twinkle 2.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}@keyframes twinkle{50%{transform:rotate(25deg) scale(1.16);opacity:.55}}@media(prefers-reduced-motion:reduce){.twinkle{animation:none}}</style>
+  </defs>
+  <g clip-path="url(#round)">
+    <rect width="256" height="256" fill="url(#bg)"/>
+    <path d="M0 147q56-60 112 0t144 0v109H0z" fill="#155c62" opacity=".72"/>
+    <path d="M0 190h256v66H0z" fill="#174456"/><path d="M0 221h256M128 190v66" stroke="#d3ffed" stroke-width="3" opacity=".46"/>
+    <g transform="rotate(-28 49 146)" fill="none" stroke="#263a42" stroke-linecap="round">
+      <ellipse cx="51" cy="106" rx="17" ry="28" stroke-width="7"/><path d="m51 134 21 68" stroke-width="9"/>
+      <path d="m36 95 30 22m-33-8 37-8m-38-7 33 25m-24-42-4 57m17-56 5 57" stroke-width="1.7" opacity=".7"/>
+    </g>
+    <path d="M60 264c8-67 30-102 68-102s62 35 69 102" fill="url(#shirt)"/>
+    <path d="M93 179q35 14 70 0" fill="none" stroke="#fff0c0" stroke-width="5"/>
+    <path d="M90 96q4-43 42-54 35 8 40 49l-9 35q-17 27-43 22-29-6-30-35z" fill="#bd805d"/>
+    <path d="M83 92q-7-45 28-66 35-17 65 10 12 13 8 34l-18-6-7-17-17 16-42 3-2 26-12 9z" fill="#382d30"/>
+    <path d="M91 55q13-32 48-35 27 0 39 20l-7 18q-31-11-58 8l-20 17z" fill="#e4c77e"/>
+    <path d="M168 47q17-2 30 8l-31 7" fill="#e4c77e"/><path d="M103 86q13-6 24 0" fill="none" stroke="#3c2a25" stroke-width="5" stroke-linecap="round"/>
+    <path d="M140 84q12-6 22 1" fill="none" stroke="#3c2a25" stroke-width="5" stroke-linecap="round"/>
+    <path d="M131 87q-7 17-1 21l10 1" fill="none" stroke="#87583f" stroke-width="4" stroke-linecap="round"/>
+    <path d="M109 120q28 20 57-4l-2 21q-25 26-51 4z" fill="#624239"/>
+    <path d="M113 125q24 10 46-2" fill="none" stroke="#d39a72" stroke-width="2"/>
+    <path d="M106 110h7m39-8 7 2" stroke="#463027" stroke-width="3" stroke-linecap="round"/>
+    <path d="M122 114q8-5 14 0m-12 8 2 2m14-7 2 2m-27 3 2 2m35-12 2 2" fill="none" stroke="#f1d3aa" stroke-width="2"/>
+    <g class="twinkle"><path d="m204 47 5 12 13 1-10 8 3 13-11-8-11 8 4-13-11-8 14-1z" fill="#fff4b7"/></g>
+    <circle cx="205" cy="173" r="14" fill="#ddf448"/><path d="M197 164q10 9 0 18m16-18q-10 9 0 18" fill="none" stroke="#fffcb0" stroke-width="3"/>
+  </g>
+  <circle cx="128" cy="128" r="122" fill="none" stroke="#fff" stroke-width="7"/><circle cx="128" cy="128" r="122" fill="none" stroke="#155c62" stroke-width="3"/>
+</svg>

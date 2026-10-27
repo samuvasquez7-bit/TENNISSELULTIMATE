@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Compras | TENNISSEL</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #121212; color: #fff; font-family: 'Montserrat', sans-serif; }
+        .compras-page { padding: 38px 0 64px; min-height:60vh; }
+        .compras-container { max-width: 1320px; margin: 0 auto; padding: 0 24px; }
+        .compras-hero { display:flex; justify-content:space-between; align-items:center; gap:24px; margin-bottom:26px; padding:34px clamp(22px,4vw,48px); border:1px solid rgba(34,139,34,.22); border-radius:20px; background:radial-gradient(ellipse at 15% 50%,rgba(34,139,34,.12),transparent 55%),linear-gradient(125deg,#111713 0%,#080a09 68%,#111713 100%); box-shadow:0 18px 42px rgba(0,0,0,.28); }
+        .compras-hero h1 { margin:0; color:#f8faf9; font-size:clamp(1.7rem,3vw,2.45rem); letter-spacing:-.04em; }
+        .compras-hero h1 span { color:#228B22; }
+        .compras-hero p { margin:8px 0 0; color:#aab5ae; }
+        .compras-hero-actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+        .compras-hero-actions .btn { min-height:46px; display:inline-flex; align-items:center; justify-content:center; gap:8px; border-radius:9px; font-weight:700; }
+        .compras-notices { margin-bottom:18px; }
+        .compras-notices .alert { border-radius:10px; }
+        .tabla-panel { overflow:hidden; background:linear-gradient(145deg,#171b18,#101211); border:1px solid #2b342e; border-radius:16px; padding:18px; box-shadow:0 20px 50px rgba(0,0,0,.22); }
+        .table-dark { --bs-table-bg: transparent; --bs-table-border-color:#2b342e; }
+        .tabla-panel thead th { padding:14px 12px; color:#94a198 !important; font-size:10px !important; letter-spacing:.08em; white-space:nowrap; }
+        .tabla-panel tbody td { padding:14px 12px; font-size:12px; }
+        .tabla-panel tbody tr { transition:background .18s ease; }
+        .tabla-panel tbody tr:hover { --bs-table-bg:#1b231e; }
+        .factura-producto-lista { display:grid; gap:6px; min-width:180px; }
+        .factura-producto-item { display:flex; align-items:center; gap:8px; min-width:0; }
+        .factura-producto-thumb { flex:none; width:38px; height:38px; border:1px solid #39443d; border-radius:7px; object-fit:cover; }
+        .factura-producto-nombre { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .factura-detalle-thumb { width:44px; height:44px; border:1px solid #39443d; border-radius:7px; object-fit:cover; }
+        .badge-estado { display:inline-block; background:rgba(34,139,34,0.1); color:#62ffa0; border:1px solid rgba(34,139,34,.36); padding:6px 10px; border-radius:999px; font-size:10px; font-weight:800; white-space:nowrap; }
+        .badge-pendiente { background: rgba(255,193,7,0.1); color: #ffd166; border-color:rgba(255,193,7,.36); }
+        .compras-page .btn-verde { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px; padding:9px 14px; border-radius:9px; text-decoration:none; }
+        .modal-factura { position: fixed; inset:0; box-sizing:border-box; padding:18px; background:rgba(0,0,0,.82); display:none; justify-content:center; align-items:flex-start; overflow-y:auto; overscroll-behavior:contain; z-index:9999; backdrop-filter:blur(6px); }
+        .modal-factura-content { box-sizing:border-box; background:#151a17; padding:clamp(20px,4vw,30px); border-radius:16px; max-width:720px; width:min(100%,720px); max-height:calc(100vh - 36px); max-height:calc(100dvh - 36px); overflow-y:auto; margin:auto; border:1px solid rgba(34,139,34,.35); color:#fff; position:relative; box-shadow:0 24px 70px rgba(0,0,0,.55); }
+        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 24px; color: #aaa; cursor: pointer; }
+        .close-modal:hover { color: #228B22; }
+        .btn-verde { background: #228B22; color: #000; font-weight: bold; border: none; }
+        .btn-verde:hover { background: #1E7B32; }
+        .refund-state { display: inline-block; padding: 5px 9px; border-radius:999px; border: 1px solid #555; color: #ccc; font-size: 10px; font-weight:700; text-transform: uppercase; }
+        .refund-state.pending { border-color: #ffd700; color: #ffd700; }
+        .refund-panel { display: none; margin: 18px 0; padding: 16px; border: 1px solid #333; border-left: 3px solid #228B22; background: #151515; }
+        .refund-panel h4 { margin: 0 0 6px; font-size: 16px; }
+        .refund-panel p { margin: 6px 0; color: #aaa; font-size: 13px; }
+        .refund-panel textarea { width: 100%; min-height: 82px; margin: 9px 0; padding: 10px; color: #fff; background: #101010; border: 1px solid #3a3a3a; border-radius: 5px; resize: vertical; }
+        .refund-panel input[type=file] { display:block; width:100%; margin:8px 0 14px; padding:10px; border:1px solid #3a3a3a; border-radius:7px; color:#bec8c1; background:#101411; }
+        .refund-demo-note { padding:10px 12px; border:1px solid rgba(255,193,7,.25); border-radius:8px; color:#d7cda9 !important; background:rgba(255,193,7,.05); }
+        .refund-admin-response { padding-top: 8px; border-top: 1px solid #333; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #888; }
+        @media (max-width: 760px) { .compras-hero { align-items:flex-start; flex-direction:column; padding:26px 22px; }.compras-hero-actions { width:100%; justify-content:flex-start; }.compras-hero-actions .btn { flex:1; }.tabla-panel { padding:8px; }.tabla-panel .table-responsive { border-radius:10px; }.modal-factura-content { max-height:calc(100vh - 24px); max-height:calc(100dvh - 24px); } }
+        @media (max-width: 480px) { .compras-page { padding-top:20px; }.compras-container { padding:0 12px; }.compras-hero { gap:18px; margin-bottom:18px; border-radius:14px; }.compras-hero-actions { display:grid; grid-template-columns:1fr; }.compras-hero-actions .btn { width:100%; }.modal-factura { padding:10px; }.modal-factura-content { max-height:calc(100vh - 20px); max-height:calc(100dvh - 20px); padding:18px 14px; }.refund-panel { padding:12px; } }
+        @media print { body * { visibility: hidden; } #modalFactura, #modalFactura * { visibility: visible; } #modalFactura { position: absolute; left: 0; top: 0; width: 100%; background: #fff; color: #000; } .modal-factura-content { border: none; box-shadow: none; color: #000; background: #fff; } .no-print { display: none !important; } }
+    </style>
+<base target="_self">
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+<main class="compras-page">
+    <div class="compras-container">
+
+        <header class="compras-hero">
+            <div>
+                <h1 class="fw-bold"><i class="fas fa-receipt" style="color: #228B22;"></i> MIS <span>COMPRAS</span></h1>
+                <p>Historial completo de tus pedidos, facturas y devoluciones.</p>
+            </div>
+            <div class="compras-hero-actions">
+                <a href="{{ url_for('mis_envios') }}" class="btn btn-outline-light"><i class="fas fa-truck"></i> Seguimiento</a>
+                <a href="/catalogo" class="btn btn-verde"><i class="fas fa-shopping-bag"></i> Seguir Comprando</a>
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="compras-notices" aria-live="polite">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ 'success' if category == 'success' else 'warning' if category == 'warning' else 'danger' if category == 'error' else 'info' }} mb-2" role="status">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="tabla-panel">
+            <div class="table-responsive">
+                <table class="table table-dark text-white align-middle m-0">
+                    <thead>
+                        <tr style="border-color: #333; color: #888; font-size: 13px;">
+                            <th>ID FACTURA</th>
+                            <th>FECHA & HORA</th>
+                            <th>PRODUCTOS</th>
+                            <th>TOTAL</th>
+                            <th>ESTADO</th>
+                            <th>REEMBOLSO</th>
+                            <th>MÉTODO</th>
+                            <th>ENTREGA EST.</th>
+                            <th class="text-end">ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaFacturasBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<div id="modalFactura" class="modal-factura">
+    <div class="modal-factura-content">
+        <span class="close-modal no-print" onclick="cerrarModal()">&times;</span>
+        <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+            <div>
+                <h3 class="fw-bold m-0" style="color: #228B22;">TENNISSEL<span style="color: #fff;">.</span></h3>
+                <small class="text-secondary" id="modalFacturaTipo">Factura Electrónica de Venta</small>
+            </div>
+            <div class="text-end">
+                <h5 class="m-0" id="modalFacturaId">#FAC-0000</h5>
+                <small class="text-secondary" id="modalFacturaFecha">00/00/0000 00:00</small>
+            </div>
+        </div>
+        <div class="mb-3"><strong>Cliente:</strong> <span id="modalFacturaCliente">---</span></div>
+        <div class="mb-3"><strong>Entrega estimada:</strong> <span id="modalFacturaEntrega">---</span></div>
+        <div class="mb-3"><strong>Método de pago:</strong> <span id="modalFacturaMetodo">---</span></div>
+        <p id="premiumDemoNote" class="refund-demo-note" style="display:none">Activación en modo demostración: no se realizó ningún cargo bancario.</p>
+        <section id="refundPanel" class="refund-panel">
+            <h4><i class="fa-solid fa-rotate-left" style="color:#228B22"></i> Solicitud de reembolso</h4>
+            <p id="refundDeadline"></p>
+            <p id="refundDemoNote" class="refund-demo-note" style="display:none">Esta compra no tuvo un cargo bancario. Puedes registrar la solicitud de devolución del producto; no se generará una devolución de dinero.</p>
+            <div id="refundCurrentStatus"></div>
+            <p id="refundAdminResponse" class="refund-admin-response" style="display:none"></p>
+            <form id="refundRequestForm" method="post" enctype="multipart/form-data">
+                <label for="refundReason" class="small text-secondary">Describe el motivo (mínimo 20 caracteres)</label>
+                <textarea id="refundReason" name="motivo" minlength="20" maxlength="1000" required placeholder="Describe el problema o motivo de retracto"></textarea>
+                <label for="refundEvidence" class="small text-secondary">Fotografía de evidencia (máximo 5 MB)</label>
+                <input id="refundEvidence" name="evidencia" type="file" accept="image/png,image/jpeg,image/gif,image/webp" required>
+                <button class="btn btn-verde" type="submit"><i class="fa-solid fa-paper-plane"></i> Enviar solicitud</button>
+            </form>
+        </section>
+        <table class="table table-dark text-white table-sm mb-3">
+            <thead>
+                <tr class="text-secondary">
+                    <th>Producto</th>
+                    <th class="text-center">Cant.</th>
+                    <th class="text-end">Precio U.</th>
+                    <th class="text-end">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody id="modalFacturaProductos"></tbody>
+        </table>
+        <div class="d-flex justify-content-between border-top border-secondary pt-3">
+            <span class="fs-5 fw-bold" id="modalFacturaTotalLabel">Total:</span>
+            <span class="fs-4 fw-bold" style="color: #228B22;" id="modalFacturaTotal">$0</span>
+        </div>
+        <div class="mt-4 text-end no-print">
+            <button class="btn btn-outline-light me-2" onclick="cerrarModal()">Cerrar</button>
+            <button class="btn btn-verde" onclick="window.print()">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+        </div>
+    </div>
+</div>
+
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+
+<script>
+    const facturasData = {{ facturas_json | tojson }};
+    const abrirReembolso = {{ abrir_reembolso | tojson }};
+    const formatoPesos = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
+
+    function escapeHTML(str) {
+        return String(str || '').replace(/[&<>"']/g, function(m) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+        });
+    }
+
+    function renderizarTabla(datos) {
+        const tbody = document.getElementById('tablaFacturasBody');
+        tbody.innerHTML = '';
+
+        if (datos.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9">
+                        <div class="empty-state">
+                            <i class="fas fa-receipt" style="font-size: 48px; color: #333; margin-bottom: 15px;"></i>
+                            <h3>Aún no tienes compras</h3>
+                            <p style="margin-bottom: 20px;">Tu historial de facturas aparecerá aquí.</p>
+                            <a href="/catalogo" class="btn btn-verde">Ir a la Tienda</a>
+                        </div>
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        datos.forEach(function(f) {
+            var fechaObj = new Date(f.fecha);
+            var fechaFormateada = isNaN(fechaObj) ? f.fecha : fechaObj.toLocaleDateString() + ' ' + fechaObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            var prodResumen = (f.productos || []).map(function(p) { 
+                return (p.producto_nombre || p.nombre || '') + ' (x' + p.cantidad + ')'; 
+            }).join(', ');
+
+            var estado = (f.estado || '').toLowerCase();
+            var badgeClass = estado === 'pagado' ? 'badge-estado' : 'badge-estado badge-pendiente';
+
+            var fila = document.createElement('tr');
+            fila.style.borderColor = '#2a2a2a';
+            fila.innerHTML =
+                '<td class="fw-bold">' + escapeHTML(f.id_formateado) + '</td>' +
+                '<td class="text-secondary">' + escapeHTML(fechaFormateada) + '</td>' +
+                '<td style="max-width:280px;" title="' + escapeHTML(prodResumen) + '"><div class="factura-producto-lista">' + (f.productos || []).map(function(p) {
+                    return '<span class="factura-producto-item"><img class="factura-producto-thumb" src="' + escapeHTML(p.imagen_url) + '" alt="" loading="lazy"><span class="factura-producto-nombre">' + escapeHTML(p.producto_nombre || p.nombre) + ' × ' + escapeHTML(p.cantidad) + '</span></span>';
+                }).join('') + '</div></td>' +
+                '<td style="color:#228B22;" class="fw-bold">$' + formatoPesos.format(f.total || 0) + '</td>' +
+                '<td><span class="' + badgeClass + '">' + escapeHTML(estado.toUpperCase()) + '</span></td>' +
+                '<td>' + (f.solicitud_reembolso ? '<span class="refund-state ' + (f.solicitud_reembolso.estado === 'pendiente' ? 'pending' : '') + '">' + escapeHTML(f.solicitud_reembolso.estado) + '</span>' : (f.puede_solicitar_reembolso ? '<span class="text-success small">Disponible</span>' : '<span class="text-secondary small">No disponible</span>')) + '</td>' +
+                '<td class="text-secondary">' + escapeHTML(f.metodo_pago || 'Tarjeta') + '</td>' +
+                '<td class="text-secondary">' + escapeHTML(f.fecha_entrega_estimada || 'Por confirmar') + '</td>' +
+                '<td class="text-end">' +
+                    '<button class="btn btn-sm btn-outline-light" title="Ver Detalle">' +
+                        '<i class="fas fa-eye"></i>' +
+                    '</button>' +
+                '</td>';
+
+            fila.querySelector('button').addEventListener('click', function() {
+                verDetalleFactura(f.id);
+            });
+
+            tbody.appendChild(fila);
+        });
+    }
+
+    function verDetalleFactura(id) {
+        var f = facturasData.find(function(item) { return item.id === id; });
+        if (!f) return;
+
+        document.getElementById('modalFacturaId').innerText = '#' + f.id_formateado;
+        document.getElementById('modalFacturaFecha').innerText = new Date(f.fecha).toLocaleString();
+        document.getElementById('modalFacturaTipo').innerText = f.tipo === 'premium' ? 'Comprobante de activación Premium (demo)' : 'Factura Electrónica de Venta';
+        document.getElementById('modalFacturaCliente').innerText = f.cliente;
+        document.getElementById('modalFacturaEntrega').innerText = f.fecha_entrega_estimada || 'Por confirmar';
+        document.getElementById('modalFacturaMetodo').innerText = f.metodo_pago || 'No disponible';
+        document.getElementById('modalFacturaTotalLabel').innerText = f.tipo === 'premium' ? 'Importe registrado:' : 'Total:';
+        document.getElementById('modalFacturaTotal').innerText = '$' + formatoPesos.format(f.total || 0);
+
+        var refundPanel = document.getElementById('refundPanel');
+        var refundForm = document.getElementById('refundRequestForm');
+        var refundStatus = document.getElementById('refundCurrentStatus');
+        var refundResponse = document.getElementById('refundAdminResponse');
+        var refundDemoNote = document.getElementById('refundDemoNote');
+        refundPanel.style.display = f.puede_solicitar_reembolso || f.solicitud_reembolso ? 'block' : 'none';
+        refundForm.style.display = f.puede_solicitar_reembolso ? 'block' : 'none';
+        refundDemoNote.style.display = f.estado === 'demo' && f.tipo !== 'premium' ? 'block' : 'none';
+        document.getElementById('premiumDemoNote').style.display = f.tipo === 'premium' ? 'block' : 'none';
+        refundStatus.innerHTML = '';
+        refundResponse.style.display = 'none';
+        document.getElementById('refundDeadline').textContent = f.fecha_limite_reembolso
+            ? 'Puedes solicitar retracto hasta el ' + new Date(f.fecha_limite_reembolso + 'T12:00:00').toLocaleDateString('es-CO') + ' (5 días hábiles desde la entrega del pedido).'
+            : (f.fecha_entrega_real ? 'El plazo de solicitud venció para esta factura.' : 'La solicitud estará disponible cuando el pedido figure como entregado.');
+        if (f.solicitud_reembolso) {
+            refundStatus.innerHTML = '<span class="refund-state ' + (f.solicitud_reembolso.estado === 'pendiente' ? 'pending' : '') + '">Estado: ' + escapeHTML(f.solicitud_reembolso.estado) + '</span><p>' + escapeHTML(f.solicitud_reembolso.motivo) + '</p>';
+            if (f.solicitud_reembolso.referencia_simulada) {
+                refundStatus.innerHTML += '<p class="refund-demo-note">Devolución simulada completada: $' +
+                    formatoPesos.format(f.solicitud_reembolso.monto_simulado || 0) +
+                    ' · Referencia ' + escapeHTML(f.solicitud_reembolso.referencia_simulada) +
+                    '. No hubo movimiento de dinero.</p>';
+            }
+            if (f.solicitud_reembolso.evidencia) {
+                const evidencia = document.createElement('a');
+                evidencia.href = '/static/' + f.solicitud_reembolso.evidencia.split('/').map(encodeURIComponent).join('/');
+                evidencia.target = '_blank';
+                evidencia.rel = 'noopener';
+                evidencia.textContent = 'Ver evidencia adjunta';
+                refundStatus.appendChild(evidencia);
+            }
+            if (f.solicitud_reembolso.respuesta_admin) {
+                refundResponse.textContent = 'Respuesta de TENNISSEL: ' + f.solicitud_reembolso.respuesta_admin;
+                refundResponse.style.display = 'block';
+            }
+        }
+        refundForm.action = '/mis-compras/' + f.id + '/reembolso';
+        document.getElementById('refundReason').value = '';
+        document.getElementById('refundEvidence').value = '';
+
+        var tbody = document.getElementById('modalFacturaProductos');
+        tbody.innerHTML = '';
+
+        (f.productos || []).forEach(function(p) {
+            var subtotal = (p.precio_unitario || 0) * (p.cantidad || 0);
+            var fila = document.createElement('tr');
+            fila.style.borderColor = '#333';
+            fila.innerHTML =
+                '<td><div class="factura-producto-item"><img class="factura-detalle-thumb" src="' + escapeHTML(p.imagen_url) + '" alt=""><span>' + escapeHTML(p.producto_nombre || p.nombre) + '</span></div></td>' +
+                '<td class="text-center">' + p.cantidad + '</td>' +
+                '<td class="text-end">$' + formatoPesos.format(p.precio_unitario || 0) + '</td>' +
+                '<td class="text-end">$' + formatoPesos.format(subtotal) + '</td>';
+            tbody.appendChild(fila);
+        });
+
+        document.getElementById('modalFactura').style.display = 'flex';
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalFactura').style.display = 'none';
+    }
+
+    document.getElementById('modalFactura').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModal();
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        renderizarTabla(facturasData);
+        if (abrirReembolso) verDetalleFactura(abrirReembolso);
+    });
+</script>
+
+</body>
+</html>

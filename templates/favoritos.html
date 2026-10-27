@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ 'Favoritos' if tipo_lista == 'favoritos' else 'Lista de deseos' }} | TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #121212; color: #f4f4f4; }
+        .wishlist-page { max-width: 1180px; margin: 0 auto; padding: 110px 22px 64px; }
+        .wishlist-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; padding: 22px 24px; margin-bottom: 24px; border: 1px solid #303030; border-left: 4px solid var(--verde-neon); background: #1a1a1a; }
+        .wishlist-heading > div > span { color: var(--verde-neon); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .wishlist-heading h1 { margin: 7px 0; font-size: 30px; }
+        .wishlist-heading p { margin: 0; color: #a7b0aa; font-size: 13px; }
+        .saved-tabs { display: flex; gap: 8px; margin: 0 0 18px; border-bottom: 1px solid #303030; }
+        .saved-tab { padding: 11px 14px; color: #9ba69f; border-bottom: 2px solid transparent; text-decoration: none; font-size: 13px; }
+        .saved-tab.active.favorites { color: var(--verde-neon); border-color: var(--verde-neon); }
+        .saved-tab.active.wishlist { color: var(--dorado); border-color: var(--dorado); }
+        .wishlist-count { color: var(--verde-neon); font-size: 13px; white-space: nowrap; }
+        .wishlist-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+        .wishlist-item { min-width: 0; display: flex; flex-direction: column; border: 1px solid #303030; background: #1a1a1a; }
+        .wishlist-item img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #0b0e0c; }
+        .wishlist-description { display: -webkit-box; overflow: hidden; min-height: 66px; margin: 0; padding: 11px 14px; border-bottom: 1px solid #303a33; color: #bac6bd; background: #151b17; font-size: 12px; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+        .wishlist-body { display: flex; flex: 1; flex-direction: column; padding: 14px; }
+        .wishlist-brand { color: #8e9b92; font-size: 10px; text-transform: uppercase; }
+        .wishlist-body h2 { margin: 6px 0 10px; font-size: 15px; line-height: 1.4; }
+        .wishlist-price { margin-top: auto; color: var(--verde-neon); font-weight: 700; }
+        .wishlist-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; }
+        .wishlist-actions a { color: #e8efea; font-size: 12px; text-decoration: none; }
+        .wishlist-remove { min-height: 34px; padding: 0 9px; color: #f0aaa1; background: transparent; border: 1px solid #573a37; border-radius: 4px; cursor: pointer; font-size: 11px; }
+        .wishlist-empty { padding: 50px 10px; color: #a7a7a7; text-align: center; border-block: 1px solid #303030; }
+        .wishlist-empty a { display: inline-block; margin-top: 12px; color: var(--verde-neon); }
+        @media (max-width: 900px) { .wishlist-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media (max-width: 650px) { .wishlist-page { padding: 90px 16px 44px; }.wishlist-heading { align-items: flex-start; flex-direction: column; padding: 18px; }.wishlist-heading h1 { font-size: 25px; }.wishlist-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }.wishlist-body { padding: 11px; }.wishlist-body h2 { font-size: 13px; } }
+        @media (max-width: 380px) { .wishlist-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+{% include 'navbar.html' %}
+<main class="wishlist-page">
+    <header class="wishlist-heading">
+        <div><span>Mi cuenta / Guardados</span><h1>{{ 'Favoritos' if tipo_lista == 'favoritos' else 'Lista de deseos' }}</h1><p>{% if tipo_lista == 'favoritos' %}Productos que marcaste con el corazón para tenerlos a mano.{% else %}Productos que apartaste para comparar o comprar después.{% endif %}</p></div>
+        <span class="wishlist-count">{{ productos|length }} producto{{ 's' if productos|length != 1 else '' }}</span>
+    </header>
+    <nav class="saved-tabs" aria-label="Productos guardados">
+        <a class="saved-tab favorites {{ 'active' if tipo_lista == 'favoritos' else '' }}" href="{{ url_for('mis_favoritos') }}"><i class="fa-solid fa-heart"></i> Favoritos</a>
+        <a class="saved-tab wishlist {{ 'active' if tipo_lista == 'deseos' else '' }}" href="{{ url_for('mis_deseos') }}"><i class="fa-regular fa-bookmark"></i> Lista de deseos</a>
+    </nav>
+    {% if productos %}
+    <div class="wishlist-grid">
+        {% for producto in productos %}
+        <article class="wishlist-item">
+            <a href="{{ url_for('producto_detalle', slug=producto.slug) }}" aria-label="Ver {{ producto.nombre }}">
+                <img src="{{ producto.imagen_principal|product_image_url }}" alt="{{ producto.nombre }}" loading="lazy" decoding="async">
+            </a>
+            <p class="wishlist-description">{{ producto.descripcion_corta or producto.descripcion_larga or 'Descripción próximamente disponible.' }}</p>
+            <div class="wishlist-body">
+                <span class="wishlist-brand">{{ producto.marca or 'TENNISSEL' }}</span>
+                <h2>{{ producto.nombre }}</h2>
+                <div class="wishlist-price">${{ producto.precio|cop }}</div>
+                <div class="wishlist-actions">
+                    <a href="{{ url_for('producto_detalle', slug=producto.slug) }}">Ver producto</a>
+                    <form method="post" action="{{ url_for('alternar_favorito' if tipo_lista == 'favoritos' else 'alternar_deseo', producto_id=producto.id) }}">
+                        <input type="hidden" name="next" value="{{ url_for('mis_favoritos' if tipo_lista == 'favoritos' else 'mis_deseos') }}">
+                        <button class="wishlist-remove" type="submit" aria-label="Quitar {{ producto.nombre }} de {{ 'favoritos' if tipo_lista == 'favoritos' else 'la lista de deseos' }}"><i class="fa-regular fa-trash-can"></i> Quitar</button>
+                    </form>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="wishlist-empty">{% if tipo_lista == 'favoritos' %}Aún no tienes favoritos.{% else %}Tu lista de deseos está vacía.{% endif %}<br><a href="{{ url_for('productos') }}">Explorar el catálogo</a></div>
+    {% endif %}
+</main>
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+</body>
+</html>

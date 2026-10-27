@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ config.title }} | Administración TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </head>
+<body>
+{% include 'navbar.html' %}
+<main class="admin-crud-page">
+    <div class="admin-crud-shell">
+        <header class="admin-crud-hero">
+            <div>
+                <span class="admin-crud-eyebrow"><i class="fa-solid fa-sliders"></i> Administración TENNISSEL</span>
+                <h1>{{ config.title }}</h1>
+                <p>{% if resource == 'resenas' %}Las calificaciones aparecen aquí cuando los clientes valoran productos; el listado se ordena por promedio.{% elif resource == 'favoritos' %}Los productos guardados por clientes aparecen ordenados por su calificación promedio.{% else %}Busca y administra estos registros desde un solo panel.{% endif %}</p>
+            </div>
+            <div class="admin-crud-count"><strong>{{ total_records }}</strong><span>registros</span></div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="admin-crud-notices" aria-live="polite">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'warning' if category == 'warning' else 'danger' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% if resource in ['resenas', 'favoritos'] and not record %}
+        <section class="admin-crud-panel admin-crud-generated-data" aria-labelledby="admin-generated-data-title">
+            <div class="admin-crud-panel-heading">
+                <div><span>ACTIVIDAD DE CLIENTES</span><h2 id="admin-generated-data-title">{{ 'Calificaciones verificables' if resource == 'resenas' else 'Productos guardados' }}</h2></div>
+            </div>
+            <p class="admin-crud-muted">{% if resource == 'resenas' %}No se crean reseñas desde administración. Las calificaciones reales aparecerán aquí después de que un cliente valore un producto.{% else %}Los favoritos solo se generan cuando un cliente guarda un producto en su cuenta. No se pueden inventar desde este panel.{% endif %}</p>
+        </section>
+        {% else %}
+        <section class="admin-crud-panel" aria-labelledby="admin-crud-form-title">
+            <div class="admin-crud-panel-heading">
+                <div>
+                    <span>{{ 'EDICIÓN' if record else 'NUEVO REGISTRO' }}</span>
+                    <h2 id="admin-crud-form-title">{{ 'Actualizar registro' if record else 'Crear registro' }}</h2>
+                </div>
+                {% if record %}<a class="admin-crud-reset" href="{{ url_for('admin_crud', resource=resource, q=search, page=page) }}"><i class="fa-solid fa-xmark"></i> Cancelar edición</a>{% endif %}
+            </div>
+            <form method="post" action="{{ url_for('admin_crud', resource=resource) }}" class="admin-crud-form">
+                <input type="hidden" name="record_id" value="{{ record.id if record else '' }}">
+                <input type="hidden" name="q" value="{{ search }}">
+                <input type="hidden" name="page" value="{{ page }}">
+                {% for field in form_fields %}
+                    <div class="admin-crud-field {{ 'admin-crud-field-wide' if field.type == 'textarea' else '' }}">
+                        <label for="crud-{{ field.name }}">{{ field.label }}{% if field.required %}<span aria-hidden="true"> *</span>{% endif %}</label>
+                        {% if field.type == 'textarea' %}
+                            <textarea id="crud-{{ field.name }}" name="{{ field.name }}" rows="3" {% if field.required %}required{% endif %}>{{ record[field.name] if record and record[field.name] is not none else '' }}</textarea>
+                        {% elif field.type == 'checkbox' %}
+                            <label class="admin-crud-switch"><input id="crud-{{ field.name }}" type="checkbox" name="{{ field.name }}" value="1" {% if record and record[field.name] %}checked{% endif %}><span>{{ field.label }}</span></label>
+                        {% elif field.type == 'select' %}
+                            <select id="crud-{{ field.name }}" name="{{ field.name }}" {% if field.required %}required{% endif %}>
+                                <option value="">{{ 'Selecciona una opción' if field.required else 'Sin asignar' }}</option>
+                                {% for option in field.options %}
+                                    <option value="{{ option.value }}" {% if record and record[field.name]|string == option.value|string %}selected{% endif %}>{{ option.label }}</option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            <input id="crud-{{ field.name }}" type="{{ 'number' if field.type in ('integer', 'decimal') else field.type }}" name="{{ field.name }}" value="{{ record[field.name] if record and record[field.name] is not none else '' }}" {% if field.type in ('integer', 'decimal') %}step="{{ '1' if field.type == 'integer' else 'any' }}"{% if field.min is not none %} min="{{ field.min }}"{% endif %}{% if field.max is not none %} max="{{ field.max }}"{% endif %}{% endif %} {% if field.required %}required{% endif %}>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <div class="admin-crud-form-actions">
+                    <button class="admin-crud-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> {{ 'Guardar cambios' if record else 'Crear registro' }}</button>
+                    {% if record %}<a class="admin-crud-secondary" href="{{ url_for('admin_crud', resource=resource, q=search, page=page) }}">Cancelar</a>{% endif %}
+                </div>
+            </form>
+        </section>
+        {% endif %}
+
+        <section class="admin-crud-panel" aria-labelledby="admin-crud-list-title">
+            <div class="admin-crud-panel-heading admin-crud-list-heading">
+                <div><span>REGISTROS</span><h2 id="admin-crud-list-title">Listado</h2></div>
+                <form method="get" action="{{ url_for('admin_crud', resource=resource) }}" class="admin-crud-search">
+                    <label class="visually-hidden" for="admin-crud-search">Buscar registros</label>
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="admin-crud-search" type="search" name="q" value="{{ search }}" maxlength="120" placeholder="Buscar por campos relacionados…">
+                    <button type="submit">Buscar</button>
+                    {% if search %}<a href="{{ url_for('admin_crud', resource=resource) }}" class="admin-crud-clear">Limpiar</a>{% endif %}
+                </form>
+            </div>
+            <div class="admin-crud-table-wrap">
+                <table class="admin-crud-table">
+                    <thead><tr>{% for column in config.columns %}<th scope="col">{{ config.get('column_labels', {}).get(column, column|replace('_', ' ')|title) }}</th>{% endfor %}<th scope="col">Acciones</th></tr></thead>
+                    <tbody>
+                    {% for item in records %}
+                        <tr>
+                            {% for column in config.columns %}
+                                <td>{% if item[column] is none %}<span class="admin-crud-muted">—</span>{% elif column in boolean_fields %}<span class="admin-crud-pill {{ 'is-active' if item[column] else 'is-inactive' }}">{{ 'Sí' if item[column] else 'No' }}</span>{% else %}<span class="admin-crud-cell" title="{{ item[column ~ '_label'] ~ ' · #' ~ item[column] if item[column ~ '_label'] is defined and item[column ~ '_label'] else item[column] }}">{{ item[column ~ '_label'] if item[column ~ '_label'] is defined and item[column ~ '_label'] else item[column] }}</span>{% endif %}</td>
+                            {% endfor %}
+                            <td>
+                                <div class="admin-crud-row-actions">
+                                    {% if resource == 'ordenes' %}<a class="admin-crud-icon-button" href="{{ url_for('detalle_pedido', id=item.id) }}" aria-label="Ver artículos de la orden {{ item.id }}" title="Ver artículos"><i class="fa-solid fa-box-open"></i></a>{% endif %}
+                                    <a class="admin-crud-icon-button" href="{{ url_for('admin_crud', resource=resource, q=search, page=page, edit=item.id) }}" aria-label="Editar registro {{ item.id }}" title="Editar"><i class="fa-solid fa-pen"></i></a>
+                                    <form method="post" action="{{ url_for('admin_crud_eliminar', resource=resource, record_id=item.id) }}" onsubmit="return confirm('¿Eliminar este registro? Esta acción no se puede deshacer.');">
+                                        <input type="hidden" name="q" value="{{ search }}">
+                                        <input type="hidden" name="page" value="{{ page }}">
+                                        <button class="admin-crud-icon-button is-delete" type="submit" aria-label="Eliminar registro {{ item.id }}" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td class="admin-crud-empty" colspan="{{ config.columns|length + 1 }}"><i class="fa-regular fa-folder-open"></i><strong>{{ 'No hay resultados para esta búsqueda.' if search else 'Todavía no hay registros.' }}</strong><span>{% if search %}Prueba con otro término o limpia el filtro.{% elif resource == 'resenas' %}Aún no se han enviado calificaciones de productos.{% elif resource == 'favoritos' %}Aún no hay productos guardados por clientes.{% else %}Puedes crear el primer registro desde el formulario.{% endif %}</span></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if total_pages > 1 %}
+                <nav class="admin-crud-pagination" aria-label="Paginación de registros">
+                    <span>Página {{ page }} de {{ total_pages }} · {{ total_records }} registros</span>
+                    <div>
+                        {% if page > 1 %}<a href="{{ url_for('admin_crud', resource=resource, q=search, page=page - 1) }}"><i class="fa-solid fa-arrow-left"></i> Anterior</a>{% endif %}
+                        {% if page < total_pages %}<a href="{{ url_for('admin_crud', resource=resource, q=search, page=page + 1) }}">Siguiente <i class="fa-solid fa-arrow-right"></i></a>{% endif %}
+                    </div>
+                </nav>
+            {% endif %}
+        </section>
+    </div>
+</main>
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+</body>
+</html>

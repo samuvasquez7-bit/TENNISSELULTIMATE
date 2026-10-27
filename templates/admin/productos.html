@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Productos | Administración TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .admin-products-shell { max-width: 1320px; }
+        .admin-product-tabs { display: flex; gap: 5px; border-bottom: 1px solid #3b443e; margin-bottom: 18px; }
+        .admin-product-tabs a { display: inline-flex; gap: 8px; align-items: center; padding: 11px 14px; border-bottom: 2px solid transparent; color: #aab3ad; text-decoration: none; }
+        .admin-product-tabs a.active { border-color: var(--verde-neon); color: #fff; }
+        .admin-product-tabs span { min-width: 22px; padding: 2px 6px; border-radius: 10px; background: #29322c; color: #dce5de; font-size: 11px; text-align: center; }
+        .admin-product-name { min-width: 180px; }
+        .admin-product-name small { display: block; color: #9ba8a0; }
+        .admin-feature-request { display: inline-flex; gap: 5px; align-items: center; margin-top: 5px; color: #f2d77c; font-size: 11px; }
+        .admin-product-thumb { width: 62px; height: 54px; object-fit: cover; border: 1px solid #414b44; border-radius: 4px; }
+        .admin-product-details { margin-top: 7px; color: #b6c0b9; font-size: 12px; }
+        .admin-product-details summary { color: #c5d2c9; cursor: pointer; }
+        .admin-product-details p { max-width: 380px; margin: 6px 0; white-space: pre-wrap; }
+        .admin-product-details pre { max-width: 380px; margin: 5px 0; padding: 7px; color: #cbd6ce; background: #111713; font-size: 10px; white-space: pre-wrap; }
+        .admin-moderation-note { display: block; max-width: 350px; margin-top: 7px; color: #f2d77c; font-size: 11px; line-height: 1.4; }
+        @media (max-width: 640px) { .admin-product-tabs a { flex: 1; justify-content: center; padding: 10px 5px; font-size: 12px; } }
+        .admin-products-shell { max-width: 1480px; }
+        .admin-products-shell .admin-crud-hero { border-radius: 22px; }
+        .admin-products-shell .admin-product-tabs { gap: 8px; padding: 0 5px; border-bottom-color: rgba(190,205,192,.14); }
+        .admin-products-shell .admin-product-tabs a { min-height: 48px; border-radius: 10px 10px 0 0; transition: color .2s ease, background .2s ease; }
+        .admin-products-shell .admin-product-tabs a:hover { color: #eaf3eb; background: rgba(34,139,34,.06); }
+        .admin-products-shell .admin-product-tabs a.active { color: #70b96b; background: rgba(34,139,34,.2); box-shadow: inset 0 -2px #228B22; }
+        .admin-products-shell .admin-product-tabs span { border-radius: 999px; }
+        .admin-products-shell .admin-crud-search { min-height: 54px; padding: 6px 9px; border: 1px solid #354238; border-radius: 14px; background: #101612; }
+        .admin-products-shell .admin-crud-search input { min-height: 42px; border-color: transparent; background: transparent; }
+        .admin-products-shell .admin-crud-search button { min-height: 40px; padding-inline: 17px; border-radius: 10px; color: #10200f; background: #228B22; border-color: #228B22; }
+        .admin-products-shell .admin-crud-panel { border-radius: 18px; }
+        .admin-products-shell .admin-crud-panel-heading { padding: 20px 22px; }
+        .admin-products-shell .admin-crud-table { min-width: 1080px; border-collapse: separate; border-spacing: 0; }
+        .admin-products-shell .admin-crud-table th { padding: 14px 16px; background: #111813; }
+        .admin-products-shell .admin-crud-table td { max-width: 320px; padding: 15px 16px; }
+        .admin-products-shell .admin-crud-table tbody tr { transition: background .18s ease; }
+        .admin-products-shell .admin-crud-table tbody tr:hover { background: rgba(34,139,34,.055); }
+        .admin-products-shell .admin-product-thumb { width: 72px; height: 64px; border-radius: 10px; object-fit: cover; }
+        .admin-products-shell .admin-product-name strong { display: block; color: #f1f5f2; font-size: .86rem; }
+        .admin-products-shell .admin-product-name small { margin-top: 4px; line-height: 1.45; }
+        .admin-products-shell .admin-product-details { max-width: 420px; }
+        .admin-products-shell .admin-product-details summary { width: fit-content; margin-top: 7px; padding: 5px 9px; border: 1px solid #3b4a3e; border-radius: 999px; }
+        .admin-products-shell .admin-product-details[open] { padding: 10px; border: 1px solid rgba(190,205,192,.12); border-radius: 12px; background: #101612; }
+        .admin-products-shell .admin-product-details p { line-height: 1.55; }
+        .admin-products-shell .admin-moderation-note { max-width: 240px; line-height: 1.5; }
+        .admin-products-shell .admin-crud-table td:last-child { min-width: 240px; }
+        .admin-products-shell .admin-crud-table td:last-child > div { gap: 7px !important; }
+        .admin-products-shell .admin-crud-table td:last-child form { margin: 0; }
+        .admin-products-shell .admin-crud-table td:last-child .btn { min-height: 34px; border-radius: 9px; }
+        .admin-products-shell .admin-crud-table .badge { padding: 7px 10px; border-radius: 999px; }
+        @media (max-width: 640px) {
+            .admin-products-shell .admin-product-tabs { padding: 0; }
+            .admin-products-shell .admin-product-tabs a { min-height: 44px; border-radius: 9px 9px 0 0; }
+            .admin-products-shell .admin-crud-search { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 6px; padding: 8px; }
+            .admin-products-shell .admin-crud-search input { grid-column: 1 / -1; }
+            .admin-products-shell .admin-crud-search button { grid-column: 1; }
+            .admin-products-shell .admin-crud-search .admin-crud-clear { grid-column: 2; align-self: center; }
+            .admin-products-shell .admin-crud-table-wrap { border-radius: 12px; }
+        }
+    </style>
+</head>
+<body>
+{% include 'navbar.html' %}
+<main class="admin-crud-page">
+<div class="admin-crud-shell admin-products-shell">
+    <header class="admin-crud-hero">
+        <div><span class="admin-crud-eyebrow">Catálogo / Moderación</span><h1>Productos y solicitudes</h1><p>Revisa y administra las propuestas enviadas por las tiendas.</p></div>
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <div class="admin-crud-count"><strong>{{ productos|length }}</strong><span>resultados</span></div>
+            <a class="admin-crud-secondary" href="{{ url_for('admin_inventario') }}">Administrar inventario</a>
+        </div>
+    </header>
+    {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="alert alert-{{ 'success' if category == 'success' else 'warning' if category == 'warning' else 'danger' }}">{{ message }}</div>{% endfor %}{% endwith %}
+    {% if solicitudes_pendientes %}<div class="alert alert-warning d-flex align-items-center gap-2" role="status"><i class="fa-solid fa-inbox"></i><span><strong>{{ solicitudes_pendientes }} solicitud{{ '' if solicitudes_pendientes == 1 else 'es' }}</strong> de tienda {{ 'espera' if solicitudes_pendientes == 1 else 'esperan' }} tu aprobación.</span></div>{% endif %}
+    <nav class="admin-product-tabs" aria-label="Vistas de productos">
+        <a class="{{ 'active' if vista == 'pendientes' else '' }}" href="{{ url_for('admin_productos', vista='pendientes', q=search) }}" {% if vista == 'pendientes' %}aria-current="page"{% endif %}>Solicitudes pendientes <span>{{ solicitudes_pendientes }}</span></a>
+        <a class="{{ 'active' if vista == 'catalogo' else '' }}" href="{{ url_for('admin_productos', vista='catalogo', q=search) }}" {% if vista == 'catalogo' %}aria-current="page"{% endif %}>Catálogo activo <span>{{ productos|length if vista == 'catalogo' else '' }}</span></a>
+    </nav>
+    <form method="get" action="{{ url_for('admin_productos') }}" class="admin-crud-search mb-3">
+        <input type="hidden" name="vista" value="{{ vista }}">
+        <label class="visually-hidden" for="admin-products-search">Buscar productos</label>
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input id="admin-products-search" type="search" name="q" value="{{ search }}" maxlength="120" placeholder="Buscar por producto, SKU, marca o tienda">
+        <button type="submit">Buscar</button>
+        {% if search %}<a class="admin-crud-clear" href="{{ url_for('admin_productos', vista=vista) }}">Limpiar</a>{% endif %}
+    </form>
+    <section class="admin-crud-panel">
+        <div class="admin-crud-panel-heading"><div><span>Resultados</span><h2>Listado de productos</h2></div></div>
+    <div class="admin-crud-table-wrap">
+        <table class="admin-crud-table">
+            <thead><tr><th>Imagen</th><th>Producto</th><th>Tienda</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody>
+            {% for producto in productos %}
+                <tr>
+                    <td><img class="admin-product-thumb" src="{{ producto.imagen_principal|product_image_url }}" alt="{{ producto.nombre }}" loading="lazy"></td>
+                    <td class="admin-product-name"><strong>{{ producto.nombre }}</strong><small>{{ producto.sku or 'Sin SKU' }} · {{ producto.marca or 'Sin marca' }}</small>{% if producto.destacado_solicitado %}<span class="admin-feature-request"><i class="fa-solid fa-crown"></i> Solicita destacado Premium</span>{% elif producto.destacado %}<span class="admin-feature-request"><i class="fa-solid fa-star"></i> Destacado</span>{% endif %}<details class="admin-product-details"><summary>Ver ficha completa</summary><p>{{ producto.descripcion_larga or producto.descripcion_corta or 'Sin descripción.' }}</p><p>Subcategoría: {{ producto.subcategoria or 'Sin definir' }} · Color: {{ producto.color or 'Sin definir' }} · Talla: {{ producto.talla or 'Sin definir' }}{% if producto.peso %} · Peso: {{ producto.peso }} kg{% endif %}</p>{% if producto.especificaciones %}<strong>Características clave</strong><pre>{{ producto.especificaciones|tojson(indent=2) }}</pre>{% endif %}{% if producto.variaciones %}<strong>Variaciones y stock</strong><pre>{{ producto.variaciones|tojson(indent=2) }}</pre>{% endif %}</details></td>
+                    <td>{{ producto.tienda_nombre or 'TENNISSEL' }}{% if vista == 'pendientes' %}<small class="admin-moderation-note">{% if producto.moderation_note %}Revisión adicional: {{ producto.moderation_note }}{% else %}Solicitud de publicación enviada por la tienda{% endif %}</small>{% endif %}</td>
+                    <td>${{ producto.precio|cop }}</td>
+                    <td>{{ producto.stock }}</td>
+                    <td><span class="badge {{ 'text-bg-warning' if producto.estado_revision == 'pendiente' else 'text-bg-success' }}">{{ producto.estado_revision|title }}</span>{% if not producto.activo %}<small class="d-block text-secondary">Inactivo</small>{% endif %}</td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if vista == 'pendientes' %}
+                            <a class="btn btn-sm btn-outline-light" href="{{ url_for('editar_producto', id=producto.id) }}">Editar</a>
+                            <form method="post" action="{{ url_for('revisar_producto_tienda', id=producto.id) }}"><input type="hidden" name="estado_revision" value="aprobado"><button class="btn btn-sm btn-success" type="submit">Aprobar</button></form>
+                            <form method="post" action="{{ url_for('revisar_producto_tienda', id=producto.id) }}"><input type="hidden" name="estado_revision" value="rechazado"><button class="btn btn-sm btn-outline-danger" type="submit">Rechazar</button></form>
+                            {% else %}
+                            <a class="btn btn-sm btn-outline-light" href="{{ url_for('editar_producto', id=producto.id) }}">Editar</a>
+                            {% endif %}
+                            <form method="post" action="{{ url_for('eliminar_producto', id=producto.id) }}" onsubmit="return confirm('¿Eliminar este producto? Esta acción no se puede deshacer.');">
+                                <button class="btn btn-sm btn-outline-danger" type="submit"><i class="fa-solid fa-trash" aria-hidden="true"></i> Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="7" class="admin-crud-empty"><i class="fa-regular fa-folder-open"></i><strong>{% if vista == 'pendientes' %}No hay solicitudes pendientes de revisión{% else %}El catálogo activo no tiene productos{% endif %}</strong><span>Ajusta los filtros para encontrar otros registros.</span></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    </section>
+</div>
+</main>
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+</body>
+</html>

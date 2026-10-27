@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gestión de envíos | TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #121212; color: #fff; }
+        .shipments-page { max-width: 1180px; margin: 0 auto; padding: 110px 22px 64px; }
+        .shipments-heading { border-bottom: 1px solid #303732; padding-bottom: 22px; margin-bottom: 20px; }
+        .shipments-heading span { color: var(--verde-neon); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .shipments-heading h1 { font-size: 30px; margin: 8px 0; }
+        .shipments-heading p { color: #a7b0aa; margin: 0; }
+        .shipment-filters { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(180px, 240px) auto auto; gap: 9px; margin-bottom: 18px; }
+        .shipment-filters input, .shipment-filters select { min-width: 0; height: 40px; padding: 0 10px; color: #f4f4f4; background: #111; border: 1px solid #383838; border-radius: 4px; }
+        .shipment-filters button, .shipment-filters a { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 12px; color: #000; background: var(--verde-neon); border: 1px solid var(--verde-neon); border-radius: 4px; font-size: 12px; font-weight: 700; text-decoration: none; }
+        .shipment-filters a { color: #d4ddd6; background: transparent; border-color: #465149; }
+        .shipment-card { padding: 22px; margin-bottom: 14px; border: 1px solid #303030; border-radius: 7px; background: #1a1a1a; display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); gap: 26px; }
+        .shipment-card h2 { font-size: 17px; line-height: 1.4; margin: 0 0 7px; overflow-wrap: anywhere; }
+        .shipment-meta, .shipment-address { color: #a7b0aa; font-size: 13px; line-height: 1.7; }
+        .shipment-products { color: #d4d9d5; font-size: 13px; margin: 14px 0; }
+        .shipment-product-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .shipment-product { display: flex; align-items: center; gap: 8px; padding: 5px 8px 5px 5px; border: 1px solid #303d34; border-radius: 8px; background: #151b17; }
+        .shipment-product img { width: 38px; height: 38px; border-radius: 5px; object-fit: cover; }
+        .shipment-editor { display: grid; gap: 10px; }
+        .shipment-editor label { display: grid; gap: 5px; color: #a7b0aa; font-size: 11px; }
+        .shipment-editor input, .shipment-editor select, .shipment-editor textarea { width: 100%; min-height: 38px; padding: 8px 10px; color: #f4f4f4; background: #111; border: 1px solid #383838; border-radius: 4px; }
+        .shipment-editor textarea { min-height: 62px; resize: vertical; }
+        .shipment-editor button { min-height: 40px; color: #000; background: var(--verde-neon); border: 0; border-radius: 4px; font-weight: 700; cursor: pointer; }
+        .shipment-editor button:disabled { opacity: .5; cursor: not-allowed; }
+        .shipment-empty { color: #a7b0aa; padding: 40px 0; }
+        @media (max-width: 760px) { .shipments-page { padding: 90px 16px 40px; }.shipment-card { grid-template-columns: 1fr; }.shipments-heading h1 { font-size: 25px; }.shipment-filters { grid-template-columns: 1fr 1fr; }.shipment-filters input { grid-column: 1 / -1; } }
+        @media (max-width: 480px) { .shipment-filters { grid-template-columns: 1fr; }.shipment-filters input { grid-column: auto; }.shipment-filters button, .shipment-filters a { width: 100%; } }
+    </style>
+</head>
+<body>
+{% include 'navbar.html' %}
+<main class="shipments-page">
+    <header class="shipments-heading">
+        <span>{{ 'Administración' if rol == 'admin' else 'Panel de tienda' }}</span>
+        <h1>Pedidos y envíos</h1>
+        <p>Actualiza el estado, la fecha estimada y los datos de seguimiento para tus clientes.</p>
+    </header>
+    <form class="shipment-filters" method="get" action="{{ url_for('gestionar_envios') }}">
+        <input type="search" name="q" value="{{ buscar }}" placeholder="Buscar pedido, cliente o ciudad" aria-label="Buscar pedidos">
+        <select name="estado" aria-label="Filtrar por estado">
+            <option value="">Todos los estados</option>
+            {% for codigo, etiqueta in estados_envio.items() %}<option value="{{ codigo }}" {% if estado_filtro == codigo %}selected{% endif %}>{{ etiqueta }}</option>{% endfor %}
+        </select>
+        <button type="submit"><i class="fas fa-filter"></i> Filtrar</button>
+        <a href="{{ url_for('gestionar_envios') }}">Limpiar</a>
+    </form>
+
+    {% for envio in envios %}
+    <article class="shipment-card">
+        <section>
+            <h2>{{ envio.numero_envio }} · {{ estados_envio.get(envio.estado, envio.estado) }}</h2>
+            <div class="shipment-meta">{{ envio.factura_formateada }} · Solicitado {{ envio.created_at.strftime('%d/%m/%Y %H:%M') if envio.created_at else '' }} · Cliente: {{ envio.cliente_nombre }} · Entrega estimada: {{ envio.fecha_estimada.strftime('%d/%m/%Y') if envio.fecha_estimada else 'Por confirmar' }}</div>
+            <div class="shipment-products"><strong>Productos:</strong><div class="shipment-product-list">{% for producto in envio.productos %}<span class="shipment-product"><img src="{{ producto.imagen_principal|product_image_url }}" alt="" loading="lazy"><span>{{ producto.producto_nombre }} × {{ producto.cantidad }}</span></span>{% else %}<span>Sin detalle de productos</span>{% endfor %}</div></div>
+            <div class="shipment-address"><strong>Recibe:</strong> {{ envio.nombre_recibe or envio.cliente_nombre }}<br><strong>Entregar en:</strong> {{ envio.direccion_envio }}{% if envio.complemento_envio %}, {{ envio.complemento_envio }}{% endif %}<br>{% if envio.barrio_envio %}{{ envio.barrio_envio }}, {% endif %}{{ envio.ciudad_envio }}{% if envio.departamento_envio %}, {{ envio.departamento_envio }}{% endif %}{% if envio.codigo_postal_envio %} · CP {{ envio.codigo_postal_envio }}{% endif %}<br><strong>Contacto:</strong> {{ envio.telefono_envio }}{% if envio.instrucciones_envio %}<br><strong>Indicaciones:</strong> {{ envio.instrucciones_envio }}{% endif %}</div>
+        </section>
+        <form class="shipment-editor" method="post" action="{{ url_for('actualizar_estado_envio', envio_id=envio.id) }}">
+            <label>Estado del pedido
+                <select name="estado" required>
+                    {% for codigo, etiqueta in estados_envio.items() %}
+                    {% if codigo in envio.estados_permitidos %}
+                    <option value="{{ codigo }}" {% if envio.estado == codigo %}selected{% endif %}>{{ etiqueta }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Fecha estimada de entrega
+                <input type="date" name="fecha_estimada" value="{{ envio.fecha_estimada.strftime('%Y-%m-%d') if envio.fecha_estimada else '' }}">
+            </label>
+            <label>Transportadora o repartidor<input name="transportadora" maxlength="100" value="{{ envio.transportadora or '' }}" placeholder="Ej. Coordinadora o Repartidor de tienda"></label>
+            <label>Número de guía (opcional)<input name="codigo_seguimiento" maxlength="120" value="{{ envio.codigo_seguimiento or '' }}"></label>
+            <label>Enlace de seguimiento HTTPS (opcional)<input type="url" name="url_seguimiento" placeholder="https://..." value="{{ envio.url_seguimiento or '' }}"></label>
+            <label>Actualización para el cliente<textarea name="descripcion" maxlength="500" placeholder="Ej. Pedido empacado y listo para despacho."></textarea></label>
+            <button type="submit" {% if envio.estado == 'entregado' %}disabled title="El pedido ya figura como entregado"{% endif %}>Guardar actualización</button>
+        </form>
+    </article>
+    {% else %}
+    <div class="shipment-empty">{% if buscar or estado_filtro %}No hay pedidos que coincidan con esta búsqueda.{% else %}Todavía no hay pedidos activos asignados a esta tienda.{% endif %}</div>
+    {% endfor %}
+</main>
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+</body>
+</html>

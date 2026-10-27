@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matchmaking | TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="matchmaking-page" data-role="{{ session.get('role') }}" data-user-id="{{ session.get('user_id') }}">
+    {% include 'navbar.html' %}
+    <main class="matchmaking-shell">
+        <header class="matchmaking-header"><span>MATCHMAKING</span><h1>Conecta con tu próxima pareja de juego</h1><p>Selecciona una persona para ver su perfil o abrir una conversación.</p></header>
+        <div class="matchmaking-layout">
+            <aside class="matchmaking-directory"><div class="match-section-title"><h2>{% if session.get('role') == 'admin' %}Comunidad{% else %}Chat normal{% endif %}</h2><span>{% if session.get('role') == 'admin' %}Usuarios, tiendas y profesores{% else %}Usuarios y tiendas{% endif %}</span></div><div id="matchmaking-people" class="match-people"></div>{% if session.get('role') not in ('profesor', 'admin') %}<div class="match-section-title teacher-section"><h2>Chat profesores</h2><span>Red docente</span></div><div id="matchmaking-teachers" class="match-people"></div>{% endif %}</aside>
+            <section class="matchmaking-chat">
+                <div class="match-chat-top">
+                    <div><span>CONVERSACIÓN</span><h2 id="matchmaking-chat-title">Elige un contacto</h2><small id="matchmaking-live-status" class="match-live-status" role="status">Selecciona una persona para empezar</small></div>
+                    <img id="matchmaking-chat-avatar" class="match-chat-avatar" src="{{ url_for('static', filename='IMG/avatar-tennisel-1.png', v='20261005-7') }}" alt="Foto del contacto" hidden>
+                    <label class="chat-theme-control">
+                        <span>Fondo</span>
+                        <select data-chat-theme-select aria-label="Fondo del chat">
+                            <option value="default">Clásico</option>
+                            <option value="mountains">Montañas</option>
+                            <option value="sunset">Atardecer</option>
+                            <option value="court">Cancha</option>
+                        </select>
+                    </label>
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <div id="matchmaking-messages" class="match-messages chat-theme-surface">
+                    <p class="match-empty">Tus conversaciones aparecerán aquí.</p>
+                </div>
+                <form id="matchmaking-proposal-form" class="match-proposal-form" hidden>
+                    <div class="proposal-form-heading">
+                        <div><span>PROPUESTA DE JUEGO</span><strong>Coordina una cancha y horario</strong></div>
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </div>
+                    <label>
+                        <i class="fa-solid fa-location-dot"></i><span>Lugar</span>
+                        <select id="matchmaking-proposal-location" data-loaded="{{ 'true' if canchas else 'false' }}" required>
+                            <option value="">Selecciona una cancha</option>
+                            {% for cancha in canchas %}<option value="{{ cancha.id }}">{{ cancha.nombre }}</option>{% endfor %}
+                        </select>
+                        <small id="matchmaking-proposal-location-status" class="proposal-field-status">
+                            {% if canchas %}{{ canchas|length }} canchas disponibles{% else %}No hay canchas cargadas{% endif %}
+                        </small>
+                    </label>
+                    <label>
+                        <i class="fa-regular fa-calendar"></i><span>Fecha</span>
+                        <input id="matchmaking-proposal-date" type="date" required>
+                    </label>
+                    <label>
+                        <i class="fa-regular fa-clock"></i><span>Hora de inicio</span>
+                        <select id="matchmaking-proposal-time" required>
+                            <option value="">Selecciona una hora</option>
+                            {% for hour in range(6, 22) %}<option value="{{ '%02d:00'|format(hour) }}">{{ '%02d:00'|format(hour) }}</option>{% endfor %}
+                        </select>
+                    </label>
+                    <label>
+                        <i class="fa-solid fa-hourglass-half"></i><span>Tiempo</span>
+                        <select id="matchmaking-proposal-duration"><option value="1">1 hora</option><option value="2">2 horas</option></select>
+                    </label>
+                    <output id="matchmaking-proposal-summary" class="proposal-summary">Selecciona lugar, fecha y hora</output>
+                    <button type="submit"><i class="fa-solid fa-paper-plane"></i> Enviar propuesta</button>
+                </form>
+                <div class="match-composer">
+                    <button id="matchmaking-proposal-toggle" type="button" aria-label="Proponer reserva" aria-controls="matchmaking-proposal-form" aria-expanded="false" title="Desplegar propuesta">
+                        <i class="fa-solid fa-calendar-plus"></i>
+                    </button>
+                    <input id="matchmaking-input" type="text" placeholder="Escribe un mensaje..." autocomplete="off">
+                    <button id="matchmaking-send" type="button" aria-label="Enviar"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </section>
+        </div>
+    </main>
+    <div id="matchmaking-profile-modal" class="match-profile-modal" hidden><div id="matchmaking-profile" class="match-profile-card"></div></div>
+    {% include 'footer.html' %}
+    <script src="{{ url_for('static', filename='JS/chat-themes.js', v='20261005-3') }}"></script>
+    <script src="{{ url_for('static', filename='JS/matchmaking.js', v='20261021-live-chat') }}"></script>
+</body>
+</html>

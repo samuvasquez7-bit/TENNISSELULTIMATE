@@ -1,0 +1,576 @@
+#tennissel-widgets {
+    position: fixed;
+    right: max(20px, env(safe-area-inset-right));
+    bottom: max(20px, env(safe-area-inset-bottom));
+    z-index: 1200;
+    box-sizing: border-box;
+    width: min(280px, calc(100vw - 32px));
+    padding: 12px;
+    border: 1px solid rgba(173, 193, 180, .2);
+    border-radius: 18px;
+    background: linear-gradient(155deg, rgba(20, 27, 22, .985), rgba(9, 13, 10, .985));
+    box-shadow: 0 18px 48px rgba(0, 0, 0, .46), inset 0 1px rgba(255, 255, 255, .045);
+    backdrop-filter: blur(18px);
+    font-family: 'Montserrat', 'Segoe UI', sans-serif;
+}
+
+#tennissel-widgets .widget-dock-heading {
+    display: flex;
+    min-height: 34px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 9px;
+    padding: 0 2px 8px;
+    border-bottom: 1px solid rgba(193, 211, 199, .12);
+}
+
+#tennissel-widgets .widget-dock-heading > span {
+    color: #a8b6ad;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+}
+
+#tennissel-widgets .widget-dock-toggle {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 30px;
+    height: 28px;
+    border: 1px solid #3d4b42;
+    border-radius: 8px;
+    background: #111713;
+    color: #c7d1cb;
+    cursor: pointer;
+}
+
+#tennissel-widgets .widget-launchers {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+}
+
+#tennissel-widgets .widget-launcher {
+    display: grid;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 62px;
+    grid-template-columns: 40px minmax(0, 1fr) 14px;
+    align-items: center;
+    gap: 11px;
+    padding: 9px 11px;
+    border: 1px solid #26353a;
+    border-radius: 14px;
+    background: linear-gradient(118deg, rgba(16, 28, 34, .98), rgba(13, 41, 41, .96) 54%, rgba(17, 32, 26, .98));
+    box-shadow: 0 5px 14px rgba(0, 0, 0, .22);
+    color: #f7fbf8;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 500;
+    line-height: 1.25;
+    text-align: left;
+    text-decoration: none;
+    white-space: normal;
+    transition: background .18s, color .18s, border-color .18s, transform .18s, box-shadow .18s;
+}
+
+#tennissel-widgets .widget-launcher:hover {
+    transform: translateY(-2px);
+    border-color: #228B22;
+    background: linear-gradient(118deg, rgba(10, 35, 34, .99), rgba(14, 49, 42, .98) 54%, rgba(17, 34, 25, .99));
+    box-shadow: 0 9px 20px rgba(0, 0, 0, .34), 0 0 0 1px rgba(34, 139, 34, .16);
+    color: #fff;
+}
+
+#tennissel-widgets .widget-launcher:focus-visible,
+#tennissel-widgets .widget-dock-toggle:focus-visible {
+    outline: 2px solid #228B22;
+    outline-offset: 2px;
+}
+
+#tennissel-widgets .widget-launcher-icon {
+    display: grid;
+    box-sizing: border-box;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(34, 139, 34, .28);
+    border-radius: 11px;
+    background: rgba(34, 139, 34, .09);
+    color: #228B22;
+    font-size: 15px;
+}
+
+#tennissel-widgets .widget-assistant-avatar {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+}
+
+#tennissel-widgets .widget-assistant-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#tennissel-widgets .widget-assistant-title .widget-assistant-avatar {
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgba(34, 139, 34, .45);
+}
+
+#tennissel-widgets .widget-launcher-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 3px;
+    overflow: hidden;
+}
+
+#tennissel-widgets .widget-launcher-copy strong,
+#tennissel-widgets .widget-launcher-copy small {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#tennissel-widgets .widget-launcher-copy strong {
+    color: #f3f7f4;
+    font-size: .82rem;
+    font-weight: 750;
+    line-height: 1.15;
+}
+
+#tennissel-widgets .widget-launcher-copy small {
+    color: #9eaaa2;
+    font-size: .68rem;
+    font-weight: 500;
+    line-height: 1.25;
+}
+
+#tennissel-widgets .widget-launcher-arrow {
+    justify-self: end;
+    color: #849188;
+    font-size: .68rem;
+    transition: color .18s, transform .18s;
+}
+
+#tennissel-widgets .widget-launcher:hover .widget-launcher-arrow {
+    transform: translateX(2px);
+    color: #228B22;
+}
+
+#tennissel-widgets.is-collapsed {
+    width: auto;
+    padding: 6px;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+#tennissel-widgets.is-collapsed .widget-launchers,
+#tennissel-widgets.is-collapsed .widget-dock-heading > span {
+    display: none;
+}
+
+#tennissel-widgets.is-collapsed .widget-dock-heading {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+#tennissel-widgets .widget-panel-chatbot {
+    right: calc(100% + 14px);
+    bottom: 0;
+    display: grid;
+    width: min(400px, calc(100vw - 330px));
+    min-width: 0;
+    height: min(600px, calc(100dvh - 40px));
+    max-height: 600px;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    overflow: hidden;
+    border: 1px solid #263b36;
+    border-radius: 14px;
+    background: #0b141a;
+    box-shadow: 0 18px 55px rgba(0, 0, 0, .55);
+}
+
+#tennissel-widgets .widget-chat-user {
+    display: grid;
+    height: min(520px, calc(100dvh - 100px));
+    min-height: 360px;
+    max-height: 520px;
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    overflow: hidden;
+}
+
+#tennissel-widgets .proposal-form[hidden] {
+    display: none !important;
+}
+
+#tennissel-widgets .widget-chat-header {
+    display: flex;
+    min-height: 68px;
+    justify-content: flex-start;
+    padding: 10px 14px;
+    border: 0;
+    background: #075e54;
+}
+
+#tennissel-widgets .widget-chat-profile {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    border: 2px solid rgba(255, 255, 255, .56);
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+#tennissel-widgets .widget-chat-contact {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+    gap: 3px;
+    color: #fff;
+}
+
+#tennissel-widgets .widget-chat-contact strong {
+    font-size: .95rem;
+    font-weight: 700;
+}
+
+#tennissel-widgets .widget-chat-contact small {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255, 255, 255, .78);
+    font-size: .7rem;
+    font-weight: 500;
+}
+
+#tennissel-widgets .widget-chat-online {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #68e59b;
+    box-shadow: 0 0 0 3px rgba(104, 229, 155, .13);
+}
+
+#tennissel-widgets .widget-chat-header .btn-close-widget {
+    display: grid;
+    flex: 0 0 34px;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 25px;
+}
+
+#tennissel-widgets .widget-chat-header .btn-close-widget:hover {
+    background: rgba(255, 255, 255, .12);
+}
+
+#tennissel-widgets .chat-theme-control {
+    display: grid;
+    gap: 2px;
+    color: rgba(255, 255, 255, .8);
+    font-size: .62rem;
+    font-weight: 600;
+}
+
+#tennissel-widgets .chat-theme-control select {
+    max-width: 106px;
+    padding: 5px 7px;
+    border: 1px solid rgba(255, 255, 255, .3);
+    border-radius: 6px;
+    background: #064d46;
+    color: #fff;
+    font-size: .68rem;
+}
+
+#tennissel-widgets .chatbot-shortcuts {
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
+    background: #111b21;
+    scrollbar-width: thin;
+}
+
+#tennissel-widgets .chatbot-shortcuts button {
+    flex: 0 0 auto;
+    padding: 7px 11px;
+    border: 1px solid #2c4546;
+    border-radius: 999px;
+    background: #17252a;
+    color: #d7f6e7;
+    cursor: pointer;
+    font: 600 .72rem/1.2 'Montserrat', 'Segoe UI', sans-serif;
+    transition: border-color .18s, background .18s;
+}
+
+#tennissel-widgets .chatbot-shortcuts button:hover {
+    border-color: #00c875;
+    background: #1c3434;
+}
+
+#tennissel-widgets .chat-messages-container {
+    display: flex;
+    min-height: 0;
+    max-height: none;
+    flex-direction: column;
+    gap: 12px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 18px 12px;
+    background-color: #0b141a;
+    background-image: radial-gradient(rgba(130, 160, 148, .07) .7px, transparent .7px);
+    background-size: 13px 13px;
+    color: #f0f2f5;
+    overscroll-behavior: contain;
+    scrollbar-color: #40514d transparent;
+    scrollbar-width: thin;
+}
+
+#tennissel-widgets .chat-messages-container[data-chat-theme="mountains"] {
+    background-image: linear-gradient(rgba(7, 17, 14, .48), rgba(7, 17, 14, .64)), url("/static/IMG/chat-fondo-montanas.svg");
+    background-position: center;
+    background-size: cover;
+}
+
+#tennissel-widgets .chat-messages-container[data-chat-theme="sunset"] {
+    background-image: linear-gradient(rgba(22, 12, 24, .5), rgba(12, 18, 19, .66)), url("/static/IMG/chat-fondo-atardecer.svg");
+    background-position: center;
+    background-size: cover;
+}
+
+#tennissel-widgets .chat-messages-container[data-chat-theme="court"] {
+    background-image: linear-gradient(rgba(5, 22, 13, .44), rgba(5, 22, 13, .58)), url("/static/IMG/chat-fondo-cancha.svg");
+    background-position: center;
+    background-size: cover;
+}
+
+#tennissel-widgets .chat-messages-container[data-chat-theme="city"] {
+    background-image: linear-gradient(rgba(7, 12, 30, .42), rgba(5, 24, 28, .62)), url("/static/IMG/chat-fondo-ciudad.svg");
+    background-position: center;
+    background-size: cover;
+}
+
+#tennissel-widgets .chat-messages-container[data-chat-theme="coast"] {
+    background-image: linear-gradient(rgba(8, 34, 38, .34), rgba(21, 27, 25, .54)), url("/static/IMG/chat-fondo-costa.svg");
+    background-position: center;
+    background-size: cover;
+}
+
+#tennissel-widgets .chat-messages-container .msg-bubble {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+}
+
+#tennissel-widgets .chatbot-message-row {
+    display: flex;
+    width: 100%;
+    align-items: flex-end;
+    gap: 7px;
+}
+
+#tennissel-widgets .chatbot-message-incoming {
+    justify-content: flex-start;
+}
+
+#tennissel-widgets .chatbot-message-outgoing {
+    justify-content: flex-end;
+}
+
+#tennissel-widgets .chatbot-message-avatar {
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    margin-bottom: 2px;
+    border: 1px solid rgba(0, 200, 117, .52);
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+#tennissel-widgets .chatbot-message-row .msg-bubble {
+    position: relative;
+    width: fit-content;
+    max-width: min(82%, 290px);
+    padding: 9px 10px 20px;
+    border: 0;
+    border-radius: 10px;
+    color: #edf3f5;
+    font-size: .82rem;
+    line-height: 1.48;
+    overflow-wrap: anywhere;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .18);
+}
+
+#tennissel-widgets .chatbot-message-incoming .msg-bubble {
+    border-bottom-left-radius: 3px;
+    background: #202c33;
+}
+
+#tennissel-widgets .chatbot-message-outgoing .msg-bubble {
+    border-bottom-right-radius: 3px;
+    background: #005c4b;
+}
+
+#tennissel-widgets .chatbot-message-time {
+    position: absolute;
+    right: 8px;
+    bottom: 4px;
+    color: rgba(220, 232, 230, .58);
+    font-size: .58rem;
+    line-height: 1;
+}
+
+#tennissel-widgets .chatbot-more-link {
+    color: #74dfac;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+#tennissel-widgets .chat-input-area {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 12px;
+    border-top: 1px solid rgba(255, 255, 255, .06);
+    background: #111b21;
+}
+
+#tennissel-widgets .chat-input-area input {
+    min-width: 0;
+    min-height: 44px;
+    flex: 1 1 auto;
+    padding: 10px 15px;
+    border: 1px solid #2d4146;
+    border-radius: 999px;
+    outline: 0;
+    background: #202c33;
+    color: #f0f2f5;
+    font: 400 .82rem/1.3 'Montserrat', 'Segoe UI', sans-serif;
+}
+
+#tennissel-widgets .chat-input-area input::placeholder {
+    color: #9aa8ad;
+}
+
+#tennissel-widgets .chat-input-area input:focus {
+    border-color: #00a884;
+    box-shadow: 0 0 0 2px rgba(0, 168, 132, .14);
+}
+
+#tennissel-widgets .chat-input-area button {
+    display: grid;
+    flex: 0 0 44px;
+    place-items: center;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: #00a884;
+    color: #06251e;
+    cursor: pointer;
+    transition: background .18s, transform .18s, opacity .18s;
+}
+
+#tennissel-widgets .chat-input-area button:hover {
+    transform: scale(1.04);
+    background: #12c99e;
+}
+
+#tennissel-widgets .chat-input-area button:disabled {
+    cursor: wait;
+    opacity: .58;
+}
+
+#tennissel-widgets .chatbot-typing {
+    display: flex;
+    min-width: 54px;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 10px 10px 10px 3px;
+    background: #202c33;
+}
+
+#tennissel-widgets .chatbot-typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #a7b5b4;
+    animation: tenny-typing 1s infinite ease-in-out;
+}
+
+#tennissel-widgets .chatbot-typing span:nth-child(2) { animation-delay: .12s; }
+#tennissel-widgets .chatbot-typing span:nth-child(3) { animation-delay: .24s; }
+
+@keyframes tenny-typing {
+    0%, 60%, 100% { transform: translateY(0); opacity: .55; }
+    30% { transform: translateY(-4px); opacity: 1; }
+}
+
+@media (max-width: 760px) {
+    #tennissel-widgets {
+        right: max(10px, env(safe-area-inset-right));
+        bottom: max(10px, env(safe-area-inset-bottom));
+        width: min(252px, calc(100vw - 20px));
+        padding: 8px;
+    }
+
+    #tennissel-widgets .widget-launcher {
+        min-height: 50px;
+        padding: 7px 8px;
+    }
+
+    #tennissel-widgets .widget-launcher-icon {
+        width: 34px;
+        height: 34px;
+    }
+
+    #tennissel-widgets .widget-panel-chatbot {
+        position: fixed;
+        inset: auto max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) auto;
+        width: min(420px, calc(100vw - 20px));
+        min-width: 0;
+        height: min(620px, calc(100dvh - 20px));
+        max-height: 620px;
+        border-radius: 14px;
+    }
+
+    #tennissel-widgets .widget-chat-user {
+        height: min(480px, calc(100dvh - 100px));
+        min-height: 320px;
+        max-height: 480px;
+    }
+}
+
+@media (min-width: 561px) and (max-width: 760px) {
+    #tennissel-widgets {
+        width: 280px;
+        padding: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #tennissel-widgets .chatbot-typing span { animation: none; }
+}

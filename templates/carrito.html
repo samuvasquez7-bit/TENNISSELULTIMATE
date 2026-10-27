@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras | TENNISSEL</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #121212; color: #fff; font-family: 'Montserrat', sans-serif; }
+        .carrito-page { padding: 36px 0 64px; }
+        .carrito-container { width: min(100% - 40px, 1240px); max-width: 1240px; margin: 0 auto; padding: 0; }
+        .carrito-header { margin-bottom: 24px; text-align: left; }
+        .carrito-header h1 span { color: #228B22; }
+        .carrito-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(320px, .75fr); grid-template-areas: "products summary" "delivery delivery"; align-items: start; gap: 20px; }
+        .carrito-panel { min-width:0; background: linear-gradient(155deg,#171b18,#111412); border: 1px solid #2d3830; border-radius: 16px; padding: 24px; box-shadow: 0 16px 38px rgba(0,0,0,.22); }
+        .carrito-col-productos { grid-area:products; }
+        .carrito-col-resumen { grid-area:summary; }
+        .carrito-delivery-panel { grid-area:delivery; }
+        .carrito-layout.is-empty { grid-template-columns:minmax(0,1fr); grid-template-areas:"products"; }
+        .carrito-layout.is-empty .carrito-col-resumen,
+        .carrito-layout.is-empty .carrito-delivery-panel { display:none; }
+        .carrito-empty-state { padding:56px 20px; border:1px dashed #344239; border-radius:12px; background:radial-gradient(ellipse at 50% 0,rgba(34,139,34,.08),transparent 62%),#111512; color:#aab4ad; text-align:center; }
+        .carrito-empty-state > i { display:grid; place-items:center; width:68px; height:68px; margin:0 auto 18px; border:1px solid #304336; border-radius:20px; background:#17221a; color:#228B22; font-size:27px; }
+        .carrito-empty-state h3 { margin:0 0 8px; color:#fff; font-size:1.25rem; font-weight:800; }
+        .carrito-empty-state p { margin:0 0 20px; color:#9aa59d; }
+        .carrito-empty-state .btn { padding:11px 18px; border:0; border-radius:8px; background:#228B22; color:#06120a; font-weight:800; }
+        .carrito-panel-head { display: flex; justify-content: space-between; align-items: center; gap:12px; margin-bottom: 18px; border-bottom: 1px solid #2a332d; padding: 0 0 15px; background: transparent; }
+        .carrito-panel-head h2 { margin:0; font-size:1rem; font-weight:800; letter-spacing:.01em; }
+        .carrito-count { background: #228B22; color: #000; font-weight: bold; padding: 2px 10px; border-radius: 20px; font-size: 13px; }
+        .carrito-col-productos, .carrito-col-resumen { min-width: 0; }
+        .carrito-col-resumen .carrito-panel { border-color:#34503c; background:linear-gradient(155deg,#18211b,#101411); }
+        .carrito-resumen-body { min-width:0; padding:4px 0 0; }
+        .carrito-resumen-body .d-flex { align-items:center; padding:4px 0; }
+        .carrito-resumen-body hr { margin:14px 0; opacity:.65; }
+        .carrito-resumen-body .carrito-coupon-box { margin:16px 0; }
+        .carrito-col-resumen .carrito-panel-head { margin-bottom:16px; }
+        .carrito-table-wrap { max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; }
+        .carrito-table-wrap table { min-width: 600px; margin-bottom: 0; }
+        .carrito-coupon-box { padding:12px; margin:12px 0 16px; border:1px solid #354a3a; border-radius:9px; background:rgba(8,13,9,.68); }
+        .carrito-coupon-box > label { display:block; margin-bottom:7px; color:#dce7df; font-size:.8rem; font-weight:750; }
+        .carrito-coupon-entry { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; }
+        .carrito-coupon-entry input { width:100%; min-width:0; min-height:40px; padding:8px 10px; border:1px solid #36463a; border-radius:6px; background:#080b09; color:#fff; text-transform:uppercase; }
+        .carrito-coupon-entry button { min-height:40px; padding:8px 12px; border:0; border-radius:6px; background:#228B22; color:#07100a; font-weight:800; }
+        .carrito-coupon-status { min-height:18px; margin:7px 0 0; color:#aab4ae; font-size:12px; }
+        .carrito-product-name { min-width: 130px; overflow-wrap: anywhere; }
+        .table-dark { --bs-table-bg: transparent; }
+        .carrito-item-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; }
+        .btn-qty { background: #2a2a2a; color: #fff; border: 1px solid #444; width: 28px; height: 28px; border-radius: 4px; line-height: 1; cursor: pointer; }
+        .btn-qty:hover { background: #228B22; color: #000; border-color: #228B22; }
+        .carrito-envio-barra { background: #2a2a2a; height: 8px; border-radius: 4px; overflow: hidden; margin: 15px 0 8px 0; }
+        .carrito-envio-progreso { background: #228B22; height: 100%; transition: width 0.3s ease; }
+        .carrito-envio-msg { font-size: 13px; color: #aaa; margin: 0; }
+        .carrito-btn-pagar { width: 100%; background: #228B22; color: #000; font-weight: bold; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 20px; transition: 0.2s; }
+        .carrito-btn-pagar:hover { background: #1E7B32; }
+        .carrito-btn-vaciar { width: 100%; background: transparent; color: #ff4444; border: 1px solid #ff4444; font-weight: 500; padding: 10px; border-radius: 6px; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .carrito-btn-vaciar:hover { background: rgba(255, 68, 68, 0.1); }
+        .carrito-actions { width:100%; max-width:none; margin:16px 0 0; display:grid; gap:10px; }
+        .carrito-actions .carrito-btn-pagar,
+        .carrito-actions .carrito-btn-vaciar { width: 100%; margin: 0; box-sizing: border-box; }
+        .carrito-actions .carrito-btn-pagar { min-height: 58px; border: 1px solid #228B22; box-shadow: 0 8px 22px rgba(34, 139, 34, 0.2); letter-spacing: 1.2px; }
+        .carrito-actions .carrito-btn-vaciar { min-height: 52px; border-color: #ff4444; letter-spacing: 1px; }
+        .carrito-metodos-pago { margin-top: 16px; text-align: center; border-top: 1px solid #2a2a2a; padding-top: 13px; font-size: 12px; color: #888; }
+        .carrito-pago-icons { font-size: 24px; display: flex; justify-content: center; gap: 15px; margin-top: 10px; color: #aaa; }
+        .modal-pago-overlay { position: fixed; inset: 0; box-sizing: border-box; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: flex-start; overflow-y: auto; overscroll-behavior: contain; padding: clamp(16px, 4vh, 36px) 16px; z-index: 9999; backdrop-filter: blur(5px); }
+        .modal-pago-content { box-sizing: border-box; background: #171b18; padding: clamp(20px, 4vw, 30px); border-radius: 16px; width: min(100%, 540px); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; margin: auto; border: 1px solid rgba(34, 139, 34, .55); position: relative; color: #fff; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55); }
+        #modalPago .modal-pago-content { width: min(100%, 900px); }
+        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 24px; color: #aaa; cursor: pointer; transition: 0.2s; }
+        .close-modal:hover { color: #228B22; }
+        .opciones-pago { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 18px 0; }
+        .opcion-card { display: flex; min-width: 0; min-height: 84px; align-items: center; background: #202521; padding: 12px; border-radius: 10px; border: 1px solid #343b36; cursor: pointer; transition: .2s; }
+        .opcion-card:hover, .opcion-card:focus-within { border-color: #228B22; background: #282828; transform: translateY(-1px); }
+        .opcion-card:has(input:checked) { border-color: #228B22; box-shadow: 0 0 0 1px #228B2240; background: #202b23; }
+        .opcion-card input { margin-right: 10px; accent-color: #228B22; cursor: pointer; }
+        .pay-brand { flex: 0 0 54px; width: 54px; height: 38px; display: grid; place-items: center; border-radius: 7px; background: #f7f8fa; color: #142b55; font-size: 13px; font-weight: 900; letter-spacing: -.6px; }
+        .pay-brand.visa { color:#1434cb;font-style:italic;font-size:16px }.pay-brand.mastercard{position:relative;color:#202124;font-size:8px;letter-spacing:-.4px}.pay-brand.mastercard:before,.pay-brand.mastercard:after{content:'';position:absolute;width:19px;height:19px;border-radius:50%;top:5px}.pay-brand.mastercard:before{left:12px;background:#eb001b}.pay-brand.mastercard:after{right:12px;background:#f79e1b;mix-blend-mode:multiply}.pay-brand.amex{background:#2869b2;color:white;font-size:11px;line-height:1.05;text-align:center}.pay-brand.paypal{color:#064b96;font-style:italic;font-size:14px}.pay-brand.apple{background:#050505;color:#fff;font-size:10px}.pay-brand.google{color:#4285f4;font-size:15px}.pay-brand.mp{background:#d8efff;color:#0876bd;font-size:10px;text-align:center}.pay-brand.nequi{background:#fa2c83;color:white;font-size:11px}.pay-brand.daviplata{background:#e31b36;color:#fff;font-size:10px}.pay-brand.pse{background:#eff9e9;color:#318b2b;font-size:14px}.pay-brand.bank{background:#edf2f6;color:#405064;font-size:17px}.pay-brand.cash{background:#e5f6e9;color:#18883b;font-size:17px}
+        .opcion-detalle { display: flex; min-width: 0; align-items: center; gap: 8px; }
+        .opcion-detalle strong { display:block;font-size: 12px; line-height: 1.35; }
+        .opcion-detalle small { display: block; color: #a0aaa3; font-size: 10px; line-height: 1.35; margin-top: 3px; }
+        .metodo-demo-form{padding:16px;border:1px solid #3a443d;border-radius:10px;background:#111612;margin:12px 0 18px}.metodo-demo-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}.metodo-demo-head strong{display:block}.metodo-demo-head small{color:#a0aaa3}.metodo-demo-copy{color:#c0c9c2;font-size:12px;line-height:1.55;margin:8px 0 14px}.metodo-demo-confirm{display:flex;gap:9px;align-items:flex-start;color:#d6ded8;font-size:12px;line-height:1.45}.metodo-demo-confirm input{margin-top:3px;accent-color:#228B22}.metodo-demo-error{display:none;color:#ffaaa4;font-size:12px;margin:8px 0 0}
+        .btn-confirmar-pago { width: 100%; padding: 14px; background: #228B22; color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
+        .btn-confirmar-pago:hover { background: #1E7B32; }
+        .confirmacion-compra { text-align: center; max-width: 440px; }
+        .confirmacion-icono { width: 76px; height: 76px; margin: 0 auto 18px; border-radius: 50%; display: grid; place-items: center; background: rgba(34, 139, 34, 0.14); border: 1px solid #228B22; color: #228B22; font-size: 34px; }
+        .confirmacion-compra h3 { font-size: 25px; margin-bottom: 8px; }
+        .confirmacion-compra > p { color: #aaa; margin-bottom: 20px; }
+        .confirmacion-datos { text-align: left; background: #222; border: 1px solid #333; border-radius: 8px; padding: 14px 16px; margin-bottom: 22px; }
+        .confirmacion-datos div { display: flex; justify-content: space-between; gap: 15px; padding: 7px 0; color: #aaa; font-size: 14px; }
+        .confirmacion-datos div + div { border-top: 1px solid #333; }
+        .confirmacion-datos strong { color: #fff; text-align: right; }
+        .confirmacion-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .confirmacion-actions a { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 700; text-align: center; }
+        .confirmacion-action-track { color: #07110b; background: #228B22; }
+        .confirmacion-action-invoice { color: #fff; border: 1px solid #555; background: #222; }
+        .confirmacion-actions a:hover { filter: brightness(.9); }
+        .carrito-checkout-fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:0; }
+        .carrito-delivery-panel .carrito-checkout-fields { padding:0; }
+        .carrito-delivery-panel .checkout-address-heading { margin-bottom:2px; }
+        .carrito-delivery-actions { display:grid; grid-template-columns:minmax(0,1fr); align-items:center; gap:14px; margin-top:22px; padding-top:18px; border-top:1px solid #303a32; }
+        .carrito-delivery-actions .carrito-metodos-pago { margin:0; padding:0; border:0; text-align:left; }
+        .carrito-delivery-actions .carrito-pago-icons { justify-content:flex-start; margin-top:6px; font-size:20px; }
+        .carrito-delivery-actions .carrito-actions { grid-template-columns:minmax(0,1fr); align-items:center; margin:0; }
+        .carrito-delivery-actions .carrito-btn-vaciar { grid-column:1; grid-row:1; min-height:48px; }
+        .carrito-delivery-actions .carrito-btn-pagar { grid-column:1; grid-row:2; min-height:60px; }
+        .carrito-checkout-fields label { display: grid; gap: 6px; color: #b2bcb5; font-size: 12px; }
+        .carrito-checkout-fields input, .carrito-checkout-fields select, .carrito-checkout-fields textarea { width: 100%; min-height: 43px; padding: 10px 12px; color: #fff; background: #121712; border: 1px solid #3b463e; border-radius: 5px; font: inherit; font-size: 13px; }
+        .carrito-checkout-fields textarea { min-height: 74px; resize: vertical; }
+        .carrito-checkout-fields input:focus, .carrito-checkout-fields select:focus, .carrito-checkout-fields textarea:focus { outline: 2px solid #228B22; border-color: transparent; }
+        .checkout-field-wide { grid-column: 1 / -1; }
+        .checkout-address-heading { grid-column: 1 / -1; padding-bottom: 14px; border-bottom: 1px solid #303a32; }
+        .checkout-address-heading strong { display: block; color: #fff; font-size: 16px; }
+        .checkout-address-heading span { display: block; margin-top: 4px; color: #88938b; font-size: 12px; line-height: 1.5; }
+        .checkout-save-address { grid-column: 1 / -1; display: flex !important; grid-template-columns: auto 1fr; align-items: center; gap: 9px !important; padding: 10px 12px; border: 1px solid #343e36; border-radius: 5px; background: #151b17; }
+        .checkout-save-address input { width: 16px; min-height: 16px; accent-color: #228B22; }
+        .checkout-save-address span { color: #d3ddd6; }
+        .carrito-checkout-note { grid-column: 1 / -1; color: #88938b; font-size: 11px; line-height: 1.5; margin: 0; }
+        @media (max-width: 760px) { .opciones-pago { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 540px) { .opciones-pago { grid-template-columns: 1fr; }.modal-pago-content { max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); }.confirmacion-actions { grid-template-columns: 1fr; } }
+        @media (max-width: 760px) {
+            .carrito-checkout-fields { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .carrito-delivery-actions { grid-template-columns:1fr; gap:12px; }
+        }
+        @media (max-width: 580px) { .carrito-checkout-fields { grid-template-columns: 1fr; }.checkout-field-wide, .checkout-address-heading, .carrito-checkout-note { grid-column: auto; } }
+        @media (max-width: 992px) {
+            .carrito-layout { grid-template-columns:minmax(0,1fr); grid-template-areas:"products" "summary" "delivery"; }
+        }
+        @media (max-width: 720px) {
+            .carrito-page { padding: 22px 0 36px; }
+            .carrito-container { width: calc(100% - 24px); }
+            .carrito-header { margin-bottom: 18px; }
+            .carrito-header h1 { font-size: 25px; }
+            .carrito-header p { color: #aab2ac; font-size: 13px; }
+            .carrito-layout { grid-template-columns:minmax(0,1fr); grid-template-areas:"products" "summary" "delivery"; gap: 14px; }
+            .carrito-panel { padding: 15px; border-radius: 8px; }
+            .carrito-panel-head { gap: 10px; align-items: center; }
+            .carrito-panel-head h2 { font-size: 16px; }
+            .carrito-count { padding: 3px 8px; font-size: 11px; white-space: nowrap; }
+            .carrito-panel { box-shadow: 0 12px 28px rgba(0,0,0,.2); }
+            .carrito-actions { width: 100%; }
+            .carrito-delivery-actions .carrito-actions { grid-template-columns:minmax(0,1fr); }
+            .carrito-delivery-actions .carrito-btn-vaciar,
+            .carrito-delivery-actions .carrito-btn-pagar { grid-column:1; }
+            .carrito-delivery-actions .carrito-btn-vaciar { grid-row:1; }
+            .carrito-delivery-actions .carrito-btn-pagar { grid-row:2; }
+            .carrito-metodos-pago { margin-top: 16px; }
+            .carrito-pago-icons { flex-wrap: wrap; }
+            .confirmacion-actions { grid-template-columns: 1fr; }
+            .modal-pago-overlay { padding: 12px; }
+            .modal-pago-content { margin: auto; padding: 22px 18px; }
+            .carrito-table-wrap { overflow:visible; }
+            .carrito-table-wrap table { display:block; width:100%; min-width:0; }
+            .carrito-table-wrap thead { display:none; }
+            .carrito-table-wrap tbody { display:grid; gap:10px; }
+            .carrito-table-wrap tbody tr { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px 12px; padding:12px; border:1px solid #303d34 !important; border-radius:10px; background:#121814; }
+            .carrito-table-wrap tbody td { display:flex; min-width:0; align-items:center; justify-content:space-between; gap:8px; padding:4px 0 !important; border:0 !important; background:transparent !important; text-align:right; }
+            .carrito-table-wrap tbody td:first-child { grid-column:1/-1; justify-content:flex-start; text-align:left; }
+            .carrito-table-wrap tbody td:nth-child(2)::before { content:'Precio'; color:#8f9c93; font-size:.72rem; }
+            .carrito-table-wrap tbody td:nth-child(3)::before { content:'Cantidad'; color:#8f9c93; font-size:.72rem; }
+            .carrito-table-wrap tbody td:nth-child(4)::before { content:'Subtotal'; color:#8f9c93; font-size:.72rem; }
+            .carrito-table-wrap tbody td:nth-child(5) { justify-content:flex-end; }
+            .carrito-table-wrap .carrito-item-img { flex:none; }
+            .carrito-product-name { overflow-wrap:anywhere; }
+        }
+        @media (max-width: 380px) {
+            .carrito-panel { padding: 12px; }
+            .carrito-item-img { width: 44px; height: 44px; }
+            .carrito-actions .carrito-btn-pagar { letter-spacing: .3px; font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+<main class="carrito-page">
+    <div class="carrito-container">
+        <header class="carrito-header">
+            <h1><i class="fas fa-shopping-cart"></i> TU <span>CARRITO</span></h1>
+            <p>Revisa tu equipamiento antes de confirmar la compra.</p>
+        </header>
+
+        <div class="carrito-layout">
+            <div class="carrito-col-productos">
+                <div class="carrito-panel">
+                    <div class="carrito-panel-head">
+                        <h2><i class="fas fa-list"></i> Productos en tu orden</h2>
+                        <span class="carrito-count" id="carritoCount">0 items</span>
+                    </div>
+                    <div id="contenedor-tabla-carrito"></div>
+                </div>
+            </div>
+
+            <div class="carrito-col-resumen">
+                <div class="carrito-panel carrito-checkout-panel">
+                    <div class="carrito-panel-head">
+                        <h2><i class="fas fa-receipt"></i> Resumen</h2>
+                    </div>
+
+                    <div class="carrito-resumen-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span style="color: #aaa;">Subtotal</span>
+                            <span id="resumenSubtotal" class="fw-bold">$0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span style="color: #aaa;">Envío</span>
+                            <span id="resumenEnvio" class="fw-bold">$0</span>
+                        </div>
+                        <div class="carrito-coupon-box">
+                            <label for="codigoCuponRuleta">Cupón de descuento</label>
+                            <div class="carrito-coupon-entry">
+                                <input id="codigoCuponRuleta" type="text" maxlength="40" autocomplete="off" placeholder="Escribe tu código">
+                                <button type="button" onclick="validarCuponJuego()">Aplicar</button>
+                            </div>
+                            <p id="estadoCuponRuleta" class="carrito-coupon-status" role="status"></p>
+                        </div>
+                        <hr style="border-color: #333;">
+                        <div class="d-flex justify-content-between mb-3 align-items-center">
+                            <span class="fs-5">Total</span>
+                            <strong id="gran-total-carrito" style="color: #228B22; font-size: 24px;">$0</strong>
+                        </div>
+
+                        <div class="carrito-envio-barra">
+                            <div class="carrito-envio-progreso" id="envioProgreso" style="width:0%"></div>
+                        </div>
+                        <p class="carrito-envio-msg" id="envioMsg">
+                            <i class="fas fa-truck"></i> Te faltan <strong>$300.000</strong> para envío gratis
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="carrito-panel carrito-delivery-panel">
+                    <div class="carrito-checkout-fields">
+                            <div class="checkout-address-heading">
+                                <strong><i class="fas fa-location-dot" style="color:#228B22;"></i> Datos de entrega</strong>
+                                <span>Usaremos estos datos solo para preparar y coordinar el despacho de tu pedido.</span>
+                            </div>
+                            {% if direcciones %}
+                            <label for="checkoutDireccionGuardada" class="checkout-field-wide">Usar dirección guardada
+                                <select id="checkoutDireccionGuardada" autocomplete="off">
+                                    <option value="">Ingresar otra dirección</option>
+                                    {% for direccion_guardada in direcciones %}
+                                    <option value="{{ direccion_guardada.id }}" data-nombre="{{ direccion_guardada.nombre_recibe }}" data-telefono="{{ direccion_guardada.telefono }}" data-departamento="{{ direccion_guardada.departamento }}" data-ciudad="{{ direccion_guardada.ciudad }}" data-barrio="{{ direccion_guardada.barrio }}" data-direccion="{{ direccion_guardada.direccion }}" data-complemento="{{ direccion_guardada.complemento or '' }}" data-postal="{{ direccion_guardada.codigo_postal or '' }}" data-instrucciones="{{ direccion_guardada.instrucciones or '' }}" {% if direccion_guardada.es_principal %}selected{% endif %}>{{ direccion_guardada.etiqueta }} · {{ direccion_guardada.direccion }}, {{ direccion_guardada.ciudad }}{% if direccion_guardada.es_principal %} · Principal{% endif %}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                            {% endif %}
+                            <label for="checkoutNombreRecibe" class="checkout-field-wide">Nombre completo de quien recibe
+                                <input id="checkoutNombreRecibe" name="nombre_recibe" autocomplete="name" maxlength="150" required placeholder="Nombre y apellido">
+                            </label>
+                            <label for="checkoutTelefono">Celular de contacto
+                                <input id="checkoutTelefono" name="telefono" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" required placeholder="Ej. 300 123 4567">
+                            </label>
+                            <label for="checkoutDepartamento">Departamento
+                                <select id="checkoutDepartamento" name="departamento" autocomplete="address-level1" required>
+                                    <option value="">Selecciona un departamento</option>
+                                    <option>Amazonas</option><option>Antioquia</option><option>Arauca</option><option>Atlántico</option>
+                                    <option>Bogotá D.C.</option><option>Bolívar</option><option>Boyacá</option><option>Caldas</option>
+                                    <option>Caquetá</option><option>Casanare</option><option>Cauca</option><option>Cesar</option>
+                                    <option>Chocó</option><option>Córdoba</option><option>Cundinamarca</option><option>Guainía</option>
+                                    <option>Guaviare</option><option>Huila</option><option>La Guajira</option><option>Magdalena</option>
+                                    <option>Meta</option><option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option>
+                                    <option>Quindío</option><option>Risaralda</option><option>San Andrés y Providencia</option>
+                                    <option>Santander</option><option>Sucre</option><option>Tolima</option><option>Valle del Cauca</option>
+                                    <option>Vaupés</option><option>Vichada</option>
+                                </select>
+                            </label>
+                            <label for="checkoutCiudad">Ciudad o municipio
+                                <input id="checkoutCiudad" name="ciudad" autocomplete="address-level2" maxlength="120" required placeholder="Ej. Bogotá">
+                            </label>
+                            <label for="checkoutBarrio">Barrio
+                                <input id="checkoutBarrio" name="barrio" autocomplete="address-level3" maxlength="120" required placeholder="Nombre del barrio">
+                            </label>
+                            <label for="checkoutDireccion" class="checkout-field-wide">Dirección (calle/carrera y número)
+                                <input id="checkoutDireccion" name="direccion" autocomplete="street-address" maxlength="300" required placeholder="Ej. Carrera 15 # 82-35">
+                            </label>
+                            <label for="checkoutComplemento">Apartamento, interior o conjunto
+                                <input id="checkoutComplemento" name="complemento" autocomplete="address-line2" maxlength="150" placeholder="Torre, apto., interior (opcional)">
+                            </label>
+                            <label for="checkoutPostal">Código postal
+                                <input id="checkoutPostal" name="codigo_postal" autocomplete="postal-code" inputmode="numeric" maxlength="20" placeholder="Opcional">
+                            </label>
+                            <label for="checkoutInstrucciones" class="checkout-field-wide">Indicaciones para encontrar el domicilio
+                                <textarea id="checkoutInstrucciones" name="instrucciones" maxlength="500" placeholder="Portería, referencias o instrucciones de entrega (opcional)"></textarea>
+                            </label>
+                            <label class="checkout-save-address"><input id="checkoutGuardarDireccion" type="checkbox"><span>Guardar esta dirección para futuras compras</span></label>
+                            <p class="carrito-checkout-note">La dirección se comparte con las tiendas responsables de tus productos para coordinar la entrega.</p>
+                    </div>
+                    <div class="carrito-delivery-actions">
+                        <div class="carrito-metodos-pago">
+                            <span><i class="fas fa-flask"></i> Medios de pago en modo demostración</span>
+                            <div class="carrito-pago-icons">
+                                <i class="fa-brands fa-apple" title="Apple Pay requiere una pasarela configurada"></i>
+                                <i class="fa-brands fa-google" title="Google Pay requiere una pasarela configurada"></i>
+                            </div>
+                        </div>
+                        <div class="carrito-actions">
+                            <button class="carrito-btn-vaciar" onclick="vaciarCarritoCompleto()">
+                                <i class="fas fa-trash-alt"></i> Vaciar Carrito
+                            </button>
+                            <button class="carrito-btn-pagar" onclick="procesarPagoFinal()">
+                                <i class="fas fa-lock"></i> Proceder al Pago
+                            </button>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- MODAL DE SELECCIÓN DE MÉTODO DE PAGO -->
+<div id="modalPago" class="modal-pago-overlay" style="display: none;">
+    <div class="modal-pago-content">
+        <span class="close-modal" onclick="cerrarModalPago()">&times;</span>
+        <h3 style="margin-bottom: 5px;"><i class="fas fa-credit-card" style="color: #228B22;"></i> Forma de Pago</h3>
+        <p style="color: #aaa; font-size: 14px;">Elige un medio para simular el proceso. No se usan datos reales ni se realiza un cobro.</p>
+        <div class="alert alert-info" role="status">Modo demostración: se validarán productos, stock y entrega, y se generará una factura de prueba.</div>
+        
+        <div class="opciones-pago" role="radiogroup" aria-label="Selecciona una forma de pago de demostracion">
+            <label class="opcion-card"><div class="opcion-detalle"><input type="radio" name="metodo_pago" value="visa" checked><span class="pay-brand visa">VISA</span><div><strong>Tarjetas Visa</strong><small>Formulario de prueba</small></div></div></label>
+            <label class="opcion-card"><div class="opcion-detalle"><input type="radio" name="metodo_pago" value="mastercard"><span class="pay-brand mastercard">mastercard</span><div><strong>MasterCard</strong><small>Formulario de prueba</small></div></div></label>
+            <label class="opcion-card"><div class="opcion-detalle"><input type="radio" name="metodo_pago" value="american_express"><span class="pay-brand amex">AMERICAN<br>EXPRESS</span><div><strong>American Express</strong><small>Formulario de prueba</small></div></div></label>
+            <label class="opcion-card"><div class="opcion-detalle"><input type="radio" name="metodo_pago" value="transferencia"><span class="pay-brand bank"><i class="fas fa-building-columns"></i></span><div><strong>Transferencia bancaria</strong><small>Formulario de prueba</small></div></div></label>
+            <label class="opcion-card"><div class="opcion-detalle"><input type="radio" name="metodo_pago" value="paypal"><span class="pay-brand paypal">PayPal</span><div><strong>PayPal</strong><small>Formulario de prueba</small></div></div></label>
+            <label class="opcion-card"><div class="opcion-detalle"><input type="radio" name="metodo_pago" value="apple_pay"><span class="pay-brand apple">Apple Pay</span><div><strong>Apple Pay</strong><small>Formulario de prueba</small></div></div></label>
+            <label class="opcion-card"><div class="opcion-detalle"><input type="radio" name="metodo_pago" value="google_pay"><span class="pay-brand google">G Pay</span><div><strong>Google Pay</strong><small>Formulario de prueba</small></div></div></label>
+            <label class="opcion-card"><div class="opcion-detalle"><input type="radio" name="metodo_pago" value="mercado_pago"><span class="pay-brand mp">mercado<br>pago</span><div><strong>Mercado Pago</strong><small>Formulario de prueba</small></div></div></label>
+            <label class="opcion-card"><div class="opcion-detalle"><input type="radio" name="metodo_pago" value="contra_entrega"><span class="pay-brand cash"><i class="fas fa-truck"></i></span><div><strong>Pago contra entrega</strong><small>Si aplica a tu direccion</small></div></div></label>
+            <label class="opcion-card"><div class="opcion-detalle"><input type="radio" name="metodo_pago" value="nequi"><span class="pay-brand nequi">Nequi</span><div><strong>Nequi (Colombia)</strong><small>Formulario de prueba</small></div></div></label>
+            <label class="opcion-card"><div class="opcion-detalle"><input type="radio" name="metodo_pago" value="daviplata"><span class="pay-brand daviplata">DaviPlata</span><div><strong>DaviPlata</strong><small>Formulario de prueba</small></div></div></label>
+            <label class="opcion-card"><div class="opcion-detalle"><input type="radio" name="metodo_pago" value="pse"><span class="pay-brand pse">PSE</span><div><strong>PSE</strong><small>Formulario de prueba</small></div></div></label>
+        </div>
+        <form id="metodoDemoForm" class="metodo-demo-form" onsubmit="return false;">
+            <div class="metodo-demo-head"><span class="pay-brand visa" id="metodoDemoLogo">VISA</span><div><strong id="metodoDemoTitulo">Formulario de prueba - Visa</strong><small id="metodoDemoSubtitulo">Pago simulado</small></div></div>
+            <p class="metodo-demo-copy" id="metodoDemoCopy">Este formulario registra solo una seleccion de prueba. No escribas datos bancarios reales.</p>
+            <label class="metodo-demo-confirm"><input type="checkbox" id="confirmarPagoDemo" required><span>Confirmo que deseo continuar con una simulacion. Entiendo que no se realizara ningun cobro.</span></label>
+            <p class="metodo-demo-error" id="metodoDemoError" role="alert">Marca la casilla para continuar con la demostracion.</p>
+        </form>
+
+        <button class="btn-confirmar-pago" type="button" onclick="finalizarCompra()">
+            <i class="fas fa-flask"></i> Simular compra
+        </button>
+    </div>
+</div>
+
+<!-- CONFIRMACIÓN DE COMPRA -->
+<div id="modalConfirmacion" class="modal-pago-overlay" style="display: none;">
+    <div class="modal-pago-content confirmacion-compra">
+        <div class="confirmacion-icono"><i class="fas fa-check"></i></div>
+        <h3>¡Compra de demostración lista!</h3>
+        <p>No se realizó ningún cobro real. Este pedido de prueba conserva su seguimiento en TENNISSEL.</p>
+        <div class="confirmacion-datos">
+            <div><span>Factura</span><strong id="confirmacionFactura">FAC-0000</strong></div>
+            <div><span>Descuento de ruleta</span><strong id="confirmacionDescuento">$0 COP</strong></div>
+            <div><span>Total registrado</span><strong id="confirmacionTotal">$0 COP</strong></div>
+            <div><span>Método (demo)</span><strong id="confirmacionMetodo">--</strong></div>
+            <div><span>Entrega estimada</span><strong id="confirmacionEntrega">--</strong></div>
+        </div>
+        <div class="confirmacion-actions">
+            <a class="confirmacion-action-track" href="{{ url_for('mis_envios') }}"><i class="fas fa-truck"></i> Ver seguimiento</a>
+            <a class="confirmacion-action-invoice" href="{{ url_for('mis_compras') }}"><i class="fas fa-file-invoice"></i> Ir a facturas</a>
+        </div>
+    </div>
+</div>
+
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+
+<script>
+    const formatoPesos = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
+    let codigoCuponAplicado = '';
+
+    document.getElementById('codigoCuponRuleta').addEventListener('input', () => {
+        codigoCuponAplicado = '';
+        document.getElementById('estadoCuponRuleta').textContent = '';
+    });
+
+    async function validarCuponJuego() {
+        const campo = document.getElementById('codigoCuponRuleta');
+        const estado = document.getElementById('estadoCuponRuleta');
+        const codigo = campo.value.trim().toUpperCase();
+        estado.style.color = '#aab4ae';
+        if (!codigo) {
+            codigoCuponAplicado = '';
+            estado.textContent = 'Escribe el codigo que recibiste en la ruleta.';
+            return;
+        }
+        estado.textContent = 'Validando codigo...';
+        try {
+            const respuesta = await fetch("{{ url_for('api_validar_cupon_juego') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({ codigo })
+            });
+            const datos = await respuesta.json();
+            if (!respuesta.ok) throw new Error(datos.error || 'No se pudo validar el codigo.');
+            codigoCuponAplicado = datos.codigo;
+            estado.style.color = '#228B22';
+            estado.textContent = datos.tipo === 'envio'
+                ? 'Envio gratis aplicado al confirmar tu compra.'
+                : `Cupon valido: ${datos.valor} de descuento aplicado al confirmar tu compra.`;
+        } catch (error) {
+            codigoCuponAplicado = '';
+            estado.style.color = '#ff8c80';
+            estado.textContent = error.message;
+        }
+    }
+
+    function renderizarCarrito() {
+        const contenedor = document.getElementById('contenedor-tabla-carrito');
+        const layout = document.querySelector('.carrito-layout');
+        const countEl = document.getElementById('carritoCount');
+        const subtotalEl = document.getElementById('resumenSubtotal');
+        const totalEl = document.getElementById('gran-total-carrito');
+        
+        let carrito = JSON.parse(localStorage.getItem('carritoTennissel')) || [];
+        layout?.classList.toggle('is-empty', carrito.length === 0);
+        
+        if (carrito.length === 0) {
+            contenedor.innerHTML = `
+                <div class="carrito-empty-state">
+                    <i class="fas fa-shopping-bag" aria-hidden="true"></i>
+                    <h3>Tu carrito está vacío</h3>
+                    <p>Aún no has agregado equipamiento.</p>
+                    <a href="{{ url_for('productos') }}" class="btn">Explorar productos</a>
+                </div>`;
+            if (countEl) countEl.innerText = "0 items";
+            if (subtotalEl) subtotalEl.innerText = "$0";
+            const envioEl = document.getElementById('resumenEnvio');
+            if (envioEl) {
+                envioEl.innerText = "$0";
+                envioEl.style.color = "#228B22";
+            }
+            if (totalEl) totalEl.innerText = "$0";
+            actualizarBarraEnvio(0);
+            return;
+        }
+
+        let html = `
+            <div class="carrito-table-wrap"><table class="table table-dark text-white align-middle">
+                <thead>
+                    <tr style="border-color: #333; color: #aaa;">
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th class="text-center">Cant.</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        
+        let subtotalGeneral = 0;
+        let totalItems = 0;
+
+        carrito.forEach((item, index) => {
+            let subtotalItem = item.precio * item.cantidad;
+            subtotalGeneral += subtotalItem;
+            totalItems += item.cantidad;
+
+            html += `
+                <tr style="border-color: #2a2a2a;">
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="${item.imagen}" class="carrito-item-img" alt="${item.nombre}">
+                            <span class="fw-bold carrito-product-name">${item.nombre}</span>
+                        </div>
+                    </td>
+                    <td>$${formatoPesos.format(item.precio)}</td>
+                    <td class="text-center">
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <button class="btn-qty" onclick="cambiarCantidad(${index}, -1)">-</button>
+                            <span class="fw-bold">${item.cantidad}</span>
+                            <button class="btn-qty" onclick="cambiarCantidad(${index}, 1)">+</button>
+                        </div>
+                    </td>
+                    <td style="color: #228B22;" class="fw-bold">$${formatoPesos.format(subtotalItem)}</td>
+                    <td>
+                        <button class="btn btn-sm text-danger" onclick="eliminarDelCarrito(${index})" title="Eliminar">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table></div>`;
+        contenedor.innerHTML = html;
+
+        if (countEl) countEl.innerText = `${totalItems} items`;
+        if (subtotalEl) subtotalEl.innerText = `$${formatoPesos.format(subtotalGeneral)}`;
+        if (totalEl) totalEl.innerText = `$${formatoPesos.format(subtotalGeneral)}`;
+        
+        actualizarBarraEnvio(subtotalGeneral);
+    }
+
+    function cambiarCantidad(index, delta) {
+        let carrito = JSON.parse(localStorage.getItem('carritoTennissel')) || [];
+        if (carrito[index]) {
+            carrito[index].cantidad += delta;
+            if (carrito[index].cantidad <= 0) {
+                carrito.splice(index, 1);
+            }
+            localStorage.setItem('carritoTennissel', JSON.stringify(carrito));
+            renderizarCarrito();
+        }
+    }
+
+    function eliminarDelCarrito(index) {
+        let carrito = JSON.parse(localStorage.getItem('carritoTennissel')) || [];
+        carrito.splice(index, 1);
+        localStorage.setItem('carritoTennissel', JSON.stringify(carrito));
+        renderizarCarrito();
+    }
+
+    function vaciarCarritoCompleto() {
+        if (confirm("¿Estás seguro de que deseas vaciar tu carrito?")) {
+            localStorage.removeItem('carritoTennissel');
+            renderizarCarrito();
+        }
+    }
+
+    function actualizarBarraEnvio(subtotal) {
+        const meta = 300000;
+        const costoEnvio = 10000;
+        const barra = document.getElementById('envioProgreso');
+        const msg = document.getElementById('envioMsg');
+        const envioEl = document.getElementById('resumenEnvio');
+        const totalEl = document.getElementById('gran-total-carrito');
+        
+        if (!barra || !msg) return;
+
+        let porcentaje = Math.min((subtotal / meta) * 100, 100);
+        barra.style.width = `${porcentaje}%`;
+
+        if (subtotal <= 0) {
+            if (envioEl) {
+                envioEl.innerText = "$0";
+                envioEl.style.color = "#228B22";
+            }
+            if (totalEl) totalEl.innerText = "$0";
+            msg.innerHTML = `<i class="fas fa-shopping-bag"></i> Agrega productos para calcular el envío`;
+            return;
+        }
+
+        if (subtotal >= meta) {
+            if (envioEl) {
+                envioEl.innerText = "Gratis";
+                envioEl.style.color = "#228B22";
+            }
+            if (totalEl) totalEl.innerText = `$${formatoPesos.format(subtotal)}`;
+            msg.innerHTML = `<i class="fas fa-truck" style="color:#228B22;"></i> ¡Felicidades! Tienes <strong>Envío Gratis</strong>`;
+        } else {
+            let falta = meta - subtotal;
+            if (envioEl) {
+                envioEl.innerText = `$${formatoPesos.format(costoEnvio)}`;
+                envioEl.style.color = "#fff";
+            }
+            if (totalEl) totalEl.innerText = `$${formatoPesos.format(subtotal + costoEnvio)}`;
+            msg.innerHTML = `<i class="fas fa-truck"></i> Te faltan <strong>$${formatoPesos.format(falta)}</strong> para envío gratis`;
+        }
+    }
+
+    function procesarPagoFinal() {
+        let carrito = JSON.parse(localStorage.getItem('carritoTennissel')) || [];
+        if (carrito.length === 0) {
+            alert("Tu carrito está vacío. Agrega productos antes de realizar el pago.");
+            return;
+        }
+        const camposEntrega = ['checkoutNombreRecibe', 'checkoutTelefono', 'checkoutDepartamento', 'checkoutCiudad', 'checkoutBarrio', 'checkoutDireccion'];
+        const primerCampoInvalido = camposEntrega.map(id => document.getElementById(id)).find(campo => !campo.reportValidity());
+        if (primerCampoInvalido) return;
+        document.getElementById('modalPago').style.display = 'flex';
+    }
+
+    function aplicarDireccionGuardada() {
+        const selector = document.getElementById('checkoutDireccionGuardada');
+        if (!selector || !selector.value) return;
+        const opcion = selector.selectedOptions[0];
+        const campos = {
+            checkoutNombreRecibe: 'nombre',
+            checkoutTelefono: 'telefono',
+            checkoutDepartamento: 'departamento',
+            checkoutCiudad: 'ciudad',
+            checkoutBarrio: 'barrio',
+            checkoutDireccion: 'direccion',
+            checkoutComplemento: 'complemento',
+            checkoutPostal: 'postal',
+            checkoutInstrucciones: 'instrucciones'
+        };
+        Object.entries(campos).forEach(([id, atributo]) => {
+            document.getElementById(id).value = opcion.dataset[atributo] || '';
+        });
+    }
+
+    function cerrarModalPago() {
+        document.getElementById('modalPago').style.display = 'none';
+    }
+
+    const metodosDemoInfo = {
+        visa: {nombre:'Tarjetas Visa', marca:'VISA', clase:'visa', detalle:'Formulario de tarjeta de prueba', texto:'La seleccion de Visa es solo una simulacion. No escribas el numero de tu tarjeta, vencimiento ni codigo de seguridad.'},
+        mastercard: {nombre:'MasterCard', marca:'mastercard', clase:'mastercard', detalle:'Formulario de tarjeta de prueba', texto:'La seleccion de MasterCard es solo una simulacion. No escribas el numero de tu tarjeta, vencimiento ni codigo de seguridad.'},
+        american_express: {nombre:'American Express', marca:'AMERICAN<br>EXPRESS', clase:'amex', detalle:'Formulario de tarjeta de prueba', texto:'La seleccion de American Express es solo una simulacion. No escribas el numero de tu tarjeta, vencimiento ni codigo de seguridad.'},
+        transferencia: {nombre:'Transferencia bancaria', marca:'<i class="fas fa-building-columns"></i>', clase:'bank', detalle:'Formulario de transferencia de prueba', texto:'Transferencia ilustrativa: no se muestran cuentas receptoras ni se reciben referencias bancarias reales.'},
+        paypal: {nombre:'PayPal', marca:'PayPal', clase:'paypal', detalle:'Formulario PayPal de prueba', texto:'No se abrira PayPal ni se solicitaran correo, contrasena o codigo de verificacion.'},
+        apple_pay: {nombre:'Apple Pay', marca:'Apple Pay', clase:'apple', detalle:'Formulario Apple Pay de prueba', texto:'No se abrira Apple Pay ni se solicitaran datos de Apple ID o billetera.'},
+        google_pay: {nombre:'Google Pay', marca:'G Pay', clase:'google', detalle:'Formulario Google Pay de prueba', texto:'No se abrira Google Pay ni se solicitaran datos de cuenta o billetera.'},
+        mercado_pago: {nombre:'Mercado Pago', marca:'mercado<br>pago', clase:'mp', detalle:'Formulario Mercado Pago de prueba', texto:'No se abrira Mercado Pago ni se solicitaran claves, codigos o datos de cuenta.'},
+        contra_entrega: {nombre:'Pago contra entrega', marca:'<i class="fas fa-truck"></i>', clase:'cash', detalle:'Formulario de contra entrega', texto:'La modalidad depende de la cobertura. Esta seleccion de prueba no confirma disponibilidad ni genera un cobro.'},
+        nequi: {nombre:'Nequi (Colombia)', marca:'Nequi', clase:'nequi', detalle:'Formulario Nequi de prueba', texto:'No se abrira Nequi ni se solicitaran celular, clave o codigos de seguridad.'},
+        daviplata: {nombre:'DaviPlata', marca:'DaviPlata', clase:'daviplata', detalle:'Formulario DaviPlata de prueba', texto:'No se abrira DaviPlata ni se solicitaran cuenta, clave o codigos.'},
+        pse: {nombre:'PSE', marca:'PSE', clase:'pse', detalle:'Formulario PSE de prueba', texto:'No se conectara con tu banco ni se solicitaran usuario, clave o codigos de confirmacion.'}
+    };
+
+    function actualizarFormularioMetodo() {
+        const metodo = document.querySelector('input[name="metodo_pago"]:checked')?.value;
+        const info = metodosDemoInfo[metodo];
+        if (!info) return;
+        const logo = document.getElementById('metodoDemoLogo');
+        logo.className = 'pay-brand ' + info.clase;
+        logo.innerHTML = info.marca;
+        document.getElementById('metodoDemoTitulo').textContent = info.detalle + ' - ' + info.nombre;
+        document.getElementById('metodoDemoSubtitulo').textContent = 'Simulacion sin conexion a la entidad';
+        document.getElementById('metodoDemoCopy').textContent = info.texto;
+        document.getElementById('confirmarPagoDemo').checked = false;
+        document.getElementById('metodoDemoError').style.display = 'none';
+    }
+
+    document.querySelectorAll('input[name="metodo_pago"]').forEach((radio) => radio.addEventListener('change', actualizarFormularioMetodo));
+    actualizarFormularioMetodo();
+
+    async function finalizarCompra() {
+        const metodo = document.querySelector('input[name="metodo_pago"]:checked')?.value;
+        const carrito = JSON.parse(localStorage.getItem('carritoTennissel')) || [];
+        const boton = document.querySelector('.btn-confirmar-pago');
+        if (!document.getElementById('confirmarPagoDemo').checked) {
+            document.getElementById('metodoDemoError').style.display = 'block';
+            document.getElementById('confirmarPagoDemo').focus();
+            return;
+        }
+        if (!metodo || !carrito.length) {
+            alert('Elige un método de demostración y verifica que el carrito tenga productos.');
+            return;
+        }
+        boton.disabled = true;
+        boton.textContent = 'Preparando pedido demo...';
+        try {
+            const response = await fetch('/api/compras', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({
+                    modo_demo: true,
+                    metodo_pago: metodo,
+                    codigo_cupon: codigoCuponAplicado || null,
+                    direccion_id: document.getElementById('checkoutDireccionGuardada')?.value || null,
+                    guardar_direccion: document.getElementById('checkoutGuardarDireccion').checked,
+                    nombre_recibe: document.getElementById('checkoutNombreRecibe').value.trim(),
+                    direccion: document.getElementById('checkoutDireccion').value.trim(),
+                    departamento: document.getElementById('checkoutDepartamento').value.trim(),
+                    ciudad: document.getElementById('checkoutCiudad').value.trim(),
+                    barrio: document.getElementById('checkoutBarrio').value.trim(),
+                    complemento: document.getElementById('checkoutComplemento').value.trim(),
+                    codigo_postal: document.getElementById('checkoutPostal').value.trim(),
+                    telefono: document.getElementById('checkoutTelefono').value.trim(),
+                    instrucciones: document.getElementById('checkoutInstrucciones').value.trim(),
+                    productos: carrito.map((item) => ({ id: item.id, cantidad: item.cantidad }))
+                })
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'No se pudo registrar el pedido de demostración.');
+
+            localStorage.removeItem('carritoTennissel');
+            renderizarCarrito();
+            cerrarModalPago();
+            document.getElementById('confirmacionFactura').textContent = `FAC-${String(result.factura_id).padStart(4, '0')}`;
+            document.getElementById('confirmacionTotal').textContent = `$${formatoPesos.format(Number(result.total))} COP`;
+            document.getElementById('confirmacionDescuento').textContent = `$${formatoPesos.format(Number(result.descuento || 0))} COP`;
+            codigoCuponAplicado = '';
+            document.getElementById('codigoCuponRuleta').value = '';
+            document.getElementById('estadoCuponRuleta').textContent = '';
+            document.getElementById('confirmacionMetodo').textContent = result.metodo_pago;
+            document.getElementById('confirmacionEntrega').textContent = new Date(`${result.fecha_entrega_estimada}T12:00:00`).toLocaleDateString('es-CO');
+            document.getElementById('modalConfirmacion').style.display = 'flex';
+        } catch (error) {
+            alert(error.message || 'No se pudo completar la compra demo.');
+        } finally {
+            boton.disabled = false;
+            boton.innerHTML = '<i class="fas fa-flask"></i> Simular compra';
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        renderizarCarrito();
+        const selectorDirecciones = document.getElementById('checkoutDireccionGuardada');
+        if (selectorDirecciones) {
+            selectorDirecciones.addEventListener('change', aplicarDireccionGuardada);
+            aplicarDireccionGuardada();
+            ['checkoutNombreRecibe', 'checkoutTelefono', 'checkoutDepartamento', 'checkoutCiudad',
+             'checkoutBarrio', 'checkoutDireccion', 'checkoutComplemento', 'checkoutPostal',
+             'checkoutInstrucciones'].forEach(function(id) {
+                const campo = document.getElementById(id);
+                const evento = campo.tagName === 'SELECT' ? 'change' : 'input';
+                campo.addEventListener(evento, function() {
+                    if (selectorDirecciones.value) selectorDirecciones.value = '';
+                });
+            });
+        }
+    });
+</script>
+</body>
+</html>

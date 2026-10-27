@@ -1,0 +1,135 @@
+<aside id="tennisselCookieBanner" class="cookie-consent" role="region" aria-labelledby="cookieConsentTitle"
+       data-session-active="{{ 'true' if session.get('user_id') else 'false' }}" hidden>
+    <button type="button" class="cookie-close" id="cookieCloseButton" aria-label="Cerrar aviso de cookies">×</button>
+
+    <div class="cookie-consent-copy">
+        <h2 id="cookieConsentTitle">Usamos cookies</h2>
+        <p>Las cookies ayudan a que este sitio funcione, miden el uso y respaldan el marketing.
+            <button type="button" class="cookie-inline-preferences" id="cookieCustomizeButton">Elige qué cookies opcionales permites.</button>
+            Más información en nuestra <a href="{{ url_for('politica_cookies') }}">Política de cookies</a>.
+        </p>
+    </div>
+
+    <div class="cookie-custom-options" id="cookieCustomOptions" hidden>
+        <label><input type="checkbox" id="cookieAnalytics"> Permitir cookies de análisis</label>
+        <label><input type="checkbox" id="cookiePersonalization"> Recordar preferencias de navegación</label>
+        <button type="button" id="cookieSavePreferences" class="cookie-save-preferences">Guardar preferencias</button>
+    </div>
+
+    <div class="cookie-consent-actions">
+        <button type="button" id="cookiePreferencesButton" class="cookie-preferences">Preferencias de cookies</button>
+        <button type="button" data-cookie-choice="rejected" class="cookie-consent-secondary">Rechazar no esenciales</button>
+        <button type="button" data-cookie-choice="all" class="cookie-consent-primary">Aceptar todo</button>
+    </div>
+</aside>
+
+<style>
+    .cookie-consent[hidden], .cookie-custom-options[hidden] { display: none !important; }
+    .cookie-consent {
+        position: fixed; z-index: 12000; right: 0; bottom: 0; left: 0;
+        display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center;
+        gap: 14px 30px; width: 100%; padding: 16px 56px 16px 20px;
+        border: 0; border-top: 2px solid #228B22; border-radius: 0; background: #090c0a; color: #f7f7f7;
+        box-shadow: 0 -8px 28px rgba(0,0,0,.55); font-family: 'Montserrat', Arial, Helvetica, sans-serif;
+    }
+    .cookie-consent-copy { min-width: 0; }
+    .cookie-consent-copy h2 { margin: 0 0 10px; color: #228B22; font-size: 15px; font-weight: 800; }
+    .cookie-consent-copy p { max-width: 610px; margin: 0; color: #d5ddd7; font-size: 13px; line-height: 1.55; }
+    .cookie-consent-copy a { color: #228B22; text-decoration: underline; text-underline-offset: 2px; }
+    .cookie-inline-preferences { display: inline; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-decoration: underline; cursor: pointer; }
+    .cookie-consent-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+    .cookie-consent-actions button { min-height: 44px; padding: 0 16px; border-radius: 24px; font: 12px Arial, Helvetica, sans-serif; white-space: nowrap; cursor: pointer; }
+    .cookie-preferences { border: 0; background: transparent; color: #228B22; font-weight: 700 !important; }
+    .cookie-preferences:hover, .cookie-inline-preferences:hover { color: #9affbd; }
+    .cookie-consent-secondary { border: 1px solid #536258; background: #111713; color: #f4f8f5; }
+    .cookie-consent-secondary:hover { border-color: #228B22; color: #228B22; }
+    .cookie-consent-primary { border: 1px solid #228B22; background: #228B22; color: #07100a; font-weight: 800 !important; }
+    .cookie-consent-primary:hover, .cookie-save-preferences:hover { background: #00d957; border-color: #00d957; }
+    .cookie-close { position: absolute; top: 2px; right: 10px; display: grid; place-items: center; width: 48px; height: 48px; padding: 0; border: 2px solid #228B22; border-radius: 50%; background: transparent; color: #228B22; font-size: 22px; line-height: 1; cursor: pointer; }
+    .cookie-close:hover { background: rgba(34,139,34,.12); }
+    .cookie-custom-options { grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; gap: 12px 24px; padding: 12px 14px; border: 1px solid #34463a; border-radius: 8px; background: #101713; color: #eee; font-size: 13px; }
+    .cookie-custom-options input { accent-color: #228B22; }
+    .cookie-save-preferences { padding: 8px 12px; border: 1px solid #228B22; border-radius: 20px; background: #228B22; color: #07100a; font-weight: 700; cursor: pointer; }
+    @media (max-width: 900px) {
+        .cookie-consent { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 18px 54px 16px 18px; }
+        .cookie-consent-actions { justify-content: flex-start; flex-wrap: wrap; }
+        .cookie-consent-copy p { max-width: none; }
+    }
+    @media (max-width: 520px) {
+        .cookie-consent { padding: 18px 48px 16px 16px; }
+        .cookie-consent-actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: 7px; }
+        .cookie-consent-actions button { min-width: 0; padding: 0 8px; white-space: normal; }
+        .cookie-preferences { grid-column: 1 / -1; justify-self: start; min-height: 32px !important; padding-left: 0 !important; }
+        .cookie-close { top: 4px; right: 6px; width: 36px; height: 36px; }
+        .cookie-custom-options { align-items: flex-start; flex-direction: column; }
+    }
+</style>
+
+<script>
+(() => {
+    const banner = document.getElementById('tennisselCookieBanner');
+    if (!banner) return;
+
+    const preferenceKey = 'tennissel_cookie_preference_v2';
+    const shownKey = 'tennissel_cookie_notice_seen_v1';
+    const guestSession = banner.dataset.sessionActive !== 'true';
+    const customOptions = document.getElementById('cookieCustomOptions');
+    const preferencesButton = document.getElementById('cookiePreferencesButton');
+    const inlinePreferencesButton = document.getElementById('cookieCustomizeButton');
+    const savePreferencesButton = document.getElementById('cookieSavePreferences');
+    const restoreSavedOptions = () => {
+        try {
+            const saved = JSON.parse(window.localStorage.getItem(preferenceKey) || 'null');
+            document.getElementById('cookieAnalytics').checked = Boolean(saved && saved.analytics);
+            document.getElementById('cookiePersonalization').checked = Boolean(saved && saved.personalization);
+        } catch (_) {
+            document.getElementById('cookieAnalytics').checked = false;
+            document.getElementById('cookiePersonalization').checked = false;
+        }
+    };
+    const showBanner = () => {
+        restoreSavedOptions();
+        customOptions.hidden = true;
+        banner.hidden = false;
+    };
+    const saveChoice = (choice) => {
+        try { window.localStorage.setItem(preferenceKey, JSON.stringify(choice)); } catch (_) { /* Continúa si el navegador bloquea el almacenamiento. */ }
+        try { window.localStorage.setItem(shownKey, '1'); } catch (_) { /* El aviso se cierra en esta visita. */ }
+        banner.hidden = true;
+    };
+
+    try {
+        if (guestSession && !window.localStorage.getItem(shownKey)) showBanner();
+    } catch (_) {
+        showBanner();
+    }
+
+    banner.querySelectorAll('[data-cookie-choice]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const choice = button.dataset.cookieChoice;
+            saveChoice({ necessary: true, analytics: choice === 'all', personalization: choice === 'all', choice });
+        });
+    });
+
+    const openPreferences = () => {
+        restoreSavedOptions();
+        customOptions.hidden = false;
+        banner.hidden = false;
+        document.getElementById('cookieAnalytics').focus();
+    };
+    preferencesButton.addEventListener('click', openPreferences);
+    inlinePreferencesButton.addEventListener('click', openPreferences);
+    savePreferencesButton.addEventListener('click', () => saveChoice({
+        necessary: true,
+        analytics: document.getElementById('cookieAnalytics').checked,
+        personalization: document.getElementById('cookiePersonalization').checked,
+        choice: 'custom'
+    }));
+    document.getElementById('cookieCloseButton').addEventListener('click', () => saveChoice({
+        necessary: true, analytics: false, personalization: false, choice: 'dismissed'
+    }));
+    document.addEventListener('click', (event) => {
+        if (event.target.closest('#abrirPreferenciasCookies')) showBanner();
+    });
+})();
+</script>

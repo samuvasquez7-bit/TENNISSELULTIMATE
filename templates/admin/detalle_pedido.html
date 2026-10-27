@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Detalle de orden | Administración TENNISSEL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+{% include 'navbar.html' %}
+<main class="admin-crud-page">
+    <div class="admin-crud-shell">
+        <header class="admin-crud-hero">
+            <div>
+                <span class="admin-crud-eyebrow"><i class="fa-solid fa-box-open"></i> Órdenes y envíos</span>
+                <h1>Orden {{ pedido.numero_orden or ('#' ~ pedido.id) }}</h1>
+                <p>{{ pedido.cliente_nombre or pedido.cliente_usuario or pedido.cliente_email }} · {{ pedido.created_at }}</p>
+            </div>
+            <div class="admin-crud-count"><strong>{{ items|length }}</strong><span>artículos</span></div>
+        </header>
+
+        <section class="admin-crud-panel">
+            <div class="admin-crud-panel-heading">
+                <div><span>RESUMEN</span><h2>Datos de la orden</h2></div>
+                <span class="admin-crud-pill {{ 'is-active' if pedido.estado in ['pagado', 'enviado', 'entregado'] else 'is-inactive' }}">{{ pedido.estado|replace('_', ' ')|title }}</span>
+            </div>
+            <div class="admin-crud-table-wrap">
+                <table class="admin-crud-table">
+                    <tbody>
+                        <tr><th>Cliente</th><td>{{ pedido.cliente_nombre or pedido.cliente_usuario or '—' }}</td><th>Correo</th><td>{{ pedido.cliente_email or '—' }}</td></tr>
+                        <tr><th>Subtotal</th><td>${{ pedido.subtotal|cop }}</td><th>Envío</th><td>${{ (pedido.envio or 0)|cop }}</td></tr>
+                        <tr><th>Descuento</th><td>${{ (pedido.descuento or 0)|cop }}</td><th>Total</th><td><strong>${{ pedido.total|cop }}</strong></td></tr>
+                        <tr><th>Dirección</th><td>{{ pedido.direccion_envio or '—' }}</td><th>Ciudad</th><td>{{ pedido.ciudad_envio or '—' }}</td></tr>
+                        <tr><th>Teléfono</th><td>{{ pedido.telefono_envio or '—' }}</td><th>Pago</th><td>{{ pago.estado|title if pago else 'Sin pago registrado' }}{% if pago and pago.metodo %} · {{ pago.metodo|replace('_', ' ')|title }}{% endif %}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="admin-crud-panel">
+            <div class="admin-crud-panel-heading">
+                <div><span>CONTENIDO</span><h2>Artículos de la orden</h2></div>
+            </div>
+            <div class="admin-crud-table-wrap">
+                <table class="admin-crud-table">
+                    <thead><tr><th>Producto</th><th>ID</th><th>Cantidad</th><th>Precio unitario</th><th>Subtotal</th>{% if editable_items %}<th>Acciones</th>{% endif %}</tr></thead>
+                    <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td>
+                                <div class="order-product">
+                                    <img src="{{ item.imagen_principal|product_image_url }}" alt="" width="56" height="56" loading="lazy">
+                                    <strong>{{ item.nombre_producto or item.catalogo_nombre or ('Producto #' ~ item.producto_id) }}</strong>
+                                </div>
+                            </td>
+                            <td>#{{ item.producto_id }}</td>
+                            <td>{{ item.cantidad }}</td>
+                            <td>${{ item.precio_unitario|cop }}</td>
+                            <td><strong>${{ item.subtotal|cop }}</strong></td>
+                            {% if editable_items %}
+                            <td>
+                                <form method="post" class="order-item-edit-form">
+                                    <input type="hidden" name="accion" value="actualizar">
+                                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                                    <label class="visually-hidden" for="item-product-{{ item.id }}">Producto</label>
+                                    <select id="item-product-{{ item.id }}" name="producto_id" required>
+                                        {% for producto in productos_disponibles %}
+                                        <option value="{{ producto.id }}" {% if producto.id == item.producto_id %}selected{% endif %}>{{ producto.nombre }} · Stock {{ producto.stock }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label class="visually-hidden" for="item-quantity-{{ item.id }}">Cantidad</label>
+                                    <input id="item-quantity-{{ item.id }}" type="number" name="cantidad" min="1" max="99" value="{{ item.cantidad }}" required>
+                                    <button class="admin-crud-primary" type="submit" title="Guardar artículo"><i class="fa-solid fa-floppy-disk"></i></button>
+                                </form>
+                                <form method="post" class="order-item-delete-form" onsubmit="return confirm('¿Eliminar el artículo y devolver sus unidades al inventario?');">
+                                    <input type="hidden" name="accion" value="eliminar">
+                                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                                    <button class="admin-crud-icon-button is-delete" type="submit" aria-label="Eliminar artículo"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="{{ 6 if editable_items else 5 }}" class="admin-crud-empty"><i class="fa-regular fa-folder-open"></i><strong>Esta orden no tiene artículos registrados</strong><span>No hay filas asociadas en orden_items.</span></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% if editable_items %}
+        <section class="admin-crud-panel">
+            <div class="admin-crud-panel-heading">
+                <div><span>INVENTARIO</span><h2>Agregar artículo</h2></div>
+            </div>
+            <form method="post" class="order-item-add-form">
+                <input type="hidden" name="accion" value="agregar">
+                <label for="new-item-product">Producto
+                    <select id="new-item-product" name="producto_id" required>
+                        <option value="">Selecciona un producto</option>
+                        {% for producto in productos_disponibles %}
+                        <option value="{{ producto.id }}" data-stock="{{ producto.stock }}" {% if not producto.activo or producto.estado_revision != 'aprobado' or producto.stock < 1 %}disabled{% endif %}>
+                            {{ producto.nombre }} · ${{ producto.precio|cop }} · Stock {{ producto.stock }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label for="new-item-quantity">Cantidad
+                    <input id="new-item-quantity" type="number" name="cantidad" min="1" max="99" value="1" required>
+                </label>
+                <button class="admin-crud-primary" type="submit"><i class="fa-solid fa-plus"></i> Agregar a la orden</button>
+                <p>El sistema usa el precio vigente del catálogo, reserva el inventario y recalcula subtotal y total.</p>
+            </form>
+        </section>
+        {% elif pedido.estado != 'pendiente' or tiene_pago_completado %}
+        <p class="admin-crud-muted order-readonly-note">Los artículos quedan en solo lectura cuando la orden ya no está pendiente o tiene un pago completado.</p>
+        {% endif %}
+        <a class="admin-crud-secondary" href="{{ url_for('admin_crud', resource='ordenes') }}"><i class="fa-solid fa-arrow-left"></i> Volver al CRUD de órdenes</a>
+    </div>
+</main>
+{% include 'footer.html' %}
+{% include 'javascript.html' %}
+<style>
+    .order-product { display:flex; min-width:220px; align-items:center; gap:12px; }
+    .order-product img { flex:none; border:1px solid #354139; border-radius:8px; background:#0b100d; object-fit:contain; }
+    .order-product strong { color:#e8efe9; }
+    .admin-crud-table tbody th { width:130px; color:#92a198; font-size:.68rem; text-transform:uppercase; }
+    .order-item-edit-form { display:grid; min-width:270px; grid-template-columns:minmax(130px,1fr) 70px 38px; align-items:center; gap:6px; }
+    .order-item-edit-form select,.order-item-edit-form input,.order-item-add-form select,.order-item-add-form input { min-width:0; min-height:38px; padding:7px 9px; border:1px solid #37433b; border-radius:7px; background:#0b100d; color:#f3f7f4; }
+    .order-item-edit-form .admin-crud-primary { min-height:36px; padding:6px; }
+    .order-item-delete-form { display:inline-block; margin-top:6px; }
+    .order-item-add-form { display:grid; grid-template-columns:minmax(0,1fr) 110px auto; align-items:end; gap:12px; padding:20px 22px; }
+    .order-item-add-form label { display:grid; gap:7px; color:#abb8af; font-size:.75rem; font-weight:650; }
+    .order-item-add-form > p { grid-column:1/-1; margin:0; color:#8d9a91; font-size:.72rem; }
+    .order-readonly-note { margin:0 0 16px; }
+    @media (max-width:700px) {
+        .admin-crud-table tbody tr:has(th) { display:grid; grid-template-columns:1fr 1fr; }
+        .admin-crud-table tbody tr:has(th) th { padding:9px 10px 2px; border:0; }
+        .admin-crud-table tbody tr:has(th) td { padding:2px 10px 9px; }
+        .order-item-add-form { grid-template-columns:minmax(0,1fr) 90px; padding:16px; }
+        .order-item-add-form button,.order-item-add-form > p { grid-column:1/-1; }
+    }
+</style>
+</body>
+</html>
